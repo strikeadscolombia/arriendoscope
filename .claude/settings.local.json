@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --version)",
+      "Bash(npm --version)",
+      "Bash(npx --version)",
+      "WebFetch(domain:www.ciencuadras.com)",
+      "WebFetch(domain:www.rentola.co)",
+      "WebFetch(domain:www.metrocuadrado.com)",
+      "WebFetch(domain:www.mitula.com.co)",
+      "WebFetch(domain:casas.mitula.com.co)",
+      "WebFetch(domain:www.rentola.com.co)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:gitlab.com)",
+      "WebFetch(domain:www.balenciaga.com)",
+      "Bash(npm install --workspace=server)",
+      "Bash(npm create vite@latest client -- --template react)",
+      "Bash(npm install --workspace=client)",
+      "Bash(kill %1)",
+      "WebFetch(domain:www.fincaraiz.com.co)",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" https://www.metrocuadrado.com/arriendo/apartamento/bogota/)",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" https://www.fincaraiz.com.co/arriendo/apartamentos/bogota)",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" https://www.ciencuadras.com/arriendo/apartamento/bogota-dc)",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" https://casas.mitula.com.co/arriendo/apartamento/bogota)",
+      "Bash(curl -s -H \"Accept: application/json\" -H \"User-Agent: Mozilla/5.0\" https://www.fincaraiz.com.co/arriendo/apartamentos/bogota)",
+      "Bash(timeout 5 curl -s \"https://www.fincaraiz.com.co/arriendo/apartamentos/bogota\")",
+      "Bash(curl -s -L \"https://www.metrocuadrado.com/arriendo/apartamento/bogota/\")",
+      "Bash(curl -s -I \"https://www.metrocuadrado.com/arriendo/apartamento/bogota/\")",
+      "Bash(timeout 10 curl -s \"https://www.fincaraiz.com.co/arriendo/apartamentos/bogota\")",
+      "Bash(curl -s --max-time 10 \"https://www.fincaraiz.com.co/arriendo/apartamentos/bogota\")",
+      "Bash(curl -s -I \"https://casas.mitula.com.co/arriendo/apartamento/bogota\")",
+      "Bash(pkill -f \"node index.js\")",
+      "Bash(curl -s http://localhost:3001/api/listings)",
+      "Bash(node -e \":*)"
+    ]
+  }
+}

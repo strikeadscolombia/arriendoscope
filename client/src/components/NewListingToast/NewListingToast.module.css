@@ -1,0 +1,32 @@
+.toast {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-toast);
+  background-color: var(--color-accent);
+  color: var(--color-accent-inverse);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wider);
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  animation: slideIn 0.3s ease;
+}
+
+.toast:active {
+  opacity: 0.8;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-50%) translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}

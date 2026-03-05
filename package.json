@@ -1,0 +1,5 @@
+{
+  "name": "arriendos-memescope",
+  "private": true,
+  "workspaces": ["client", "server"]
+}

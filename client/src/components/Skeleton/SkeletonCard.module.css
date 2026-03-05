@@ -1,0 +1,35 @@
+.skeleton {
+  padding: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.line {
+  background: var(--color-bg-secondary);
+  animation: shimmer 1.5s infinite;
+  height: 14px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.badge { width: 32px; height: 18px; }
+.time { width: 60px; height: 12px; }
+.price { width: 180px; height: 28px; margin-bottom: var(--space-3); }
+.address { width: 70%; height: 14px; margin-bottom: var(--space-2); }
+.city { width: 80px; height: 12px; margin-bottom: var(--space-3); }
+
+.features {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.feat { width: 50px; height: 12px; }
+
+@keyframes shimmer {
+  0% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+  100% { opacity: 0.6; }
+}
