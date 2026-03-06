@@ -1,0 +1,18 @@
+.card {
+  padding: var(--space-4);
+  border-bottom: var(--border-width) solid var(--color-border);
+  min-height: 100px;
+  position: relative;
+}
+
+.label {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-text-tertiary);
+  opacity: 0.5;
+}

@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { ListingCard } from '../ListingCard/ListingCard';
+import { AdCard } from '../AdCard/AdCard';
 import { SkeletonCard } from '../Skeleton/SkeletonCard';
 import styles from './Feed.module.css';
+
+const AD_EVERY = 5; // Show an ad every N listings
 
 export function Feed({ listings, loading, hasMore, loadMore, onScrollPositionChange }) {
   const sentinelRef = useRef(null);
@@ -45,8 +48,11 @@ export function Feed({ listings, loading, hasMore, loadMore, onScrollPositionCha
 
   return (
     <div className={styles.feed}>
-      {listings.map((listing) => (
-        <ListingCard key={listing.id || listing.fingerprint} listing={listing} />
+      {listings.map((listing, i) => (
+        <div key={listing.id || listing.fingerprint}>
+          <ListingCard listing={listing} />
+          {(i + 1) % AD_EVERY === 0 && <AdCard key={`ad-${i}`} />}
+        </div>
       ))}
 
       {loading && (
