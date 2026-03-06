@@ -32,6 +32,14 @@ const TYPE_LABELS = {
 };
 
 export const ListingCard = memo(function ListingCard({ listing }) {
+  const [isNew, setIsNew] = useState(!!listing._isNew);
+
+  useEffect(() => {
+    if (!isNew) return;
+    const timer = setTimeout(() => setIsNew(false), 2000);
+    return () => clearTimeout(timer);
+  }, [isNew]);
+
   const source = SOURCES[listing.source] || { label: listing.source?.toUpperCase(), short: '?' };
   const hasPhone = listing.contact_phone && listing.contact_phone.length > 5;
 
@@ -76,7 +84,7 @@ export const ListingCard = memo(function ListingCard({ listing }) {
   const typeLabel = TYPE_LABELS[listing.property_type];
 
   return (
-    <article className={styles.card}>
+    <article className={`${styles.card} ${isNew ? styles.cardNew : ''}`}>
       <div className={styles.top}>
         <div className={styles.badges}>
           <span className={styles.badge} data-source={listing.source}>

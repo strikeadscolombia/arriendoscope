@@ -54,6 +54,33 @@ export function getListingsNeedingImages(source, limit = 20) {
   `).all({ source, limit });
 }
 
+export function getNeighborhoods(city = null, search = '') {
+  const db = getDb();
+  const conditions = [`neighborhood IS NOT NULL`, `neighborhood != ''`];
+  const params = {};
+
+  if (city) {
+    const cities = city.split(',');
+    const placeholders = cities.map((_, i) => `@city${i}`);
+    conditions.push(`LOWER(city) IN (${placeholders.join(',')})`);
+    cities.forEach((c, i) => { params[`city${i}`] = c.toLowerCase(); });
+  }
+
+  if (search) {
+    conditions.push(`LOWER(neighborhood) LIKE @search`);
+    params.search = `%${search.toLowerCase()}%`;
+  }
+
+  const where = `WHERE ${conditions.join(' AND ')}`;
+  return db.prepare(`
+    SELECT LOWER(neighborhood) as name, COUNT(*) as count
+    FROM listings ${where}
+    GROUP BY LOWER(neighborhood)
+    ORDER BY count DESC
+    LIMIT 50
+  `).all(params);
+}
+
 export function getListings(filters = {}) {
   const db = getDb();
   const conditions = [];
@@ -98,6 +125,11 @@ export function getListings(filters = {}) {
     const placeholders = types.map((_, i) => `@ptype${i}`);
     conditions.push(`property_type IN (${placeholders.join(',')})`);
     types.forEach((t, i) => { params[`ptype${i}`] = t; });
+  }
+
+  if (filters.neighborhood) {
+    conditions.push(`LOWER(neighborhood) LIKE @neighborhood`);
+    params.neighborhood = `%${filters.neighborhood.toLowerCase()}%`;
   }
 
   if (filters.before) {

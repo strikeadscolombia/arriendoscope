@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { SOURCES, CITIES, ROOM_OPTIONS, PROPERTY_TYPES } from '../../utils/constants';
+import { useState, useEffect, useRef } from 'react';
+import { SOURCES, CITIES, ROOM_OPTIONS, PROPERTY_TYPES, API_BASE } from '../../utils/constants';
 import styles from './FilterDrawer.module.css';
 
 // Multi-select keys: these support comma-separated values
@@ -7,6 +7,43 @@ const MULTI_KEYS = new Set(['city', 'source', 'propertyType']);
 
 export function FilterDrawer({ filters, onApply, onClose }) {
   const [local, setLocal] = useState({ ...filters });
+  const [barrios, setBarrios] = useState([]);
+  const [barrioSearch, setBarrioSearch] = useState('');
+  const searchTimer = useRef(null);
+
+  // Fetch barrios when city changes or user types
+  useEffect(() => {
+    clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (local.city) params.set('city', local.city);
+      if (barrioSearch.length >= 2) params.set('search', barrioSearch);
+
+      if (!local.city && barrioSearch.length < 2) {
+        setBarrios([]);
+        return;
+      }
+
+      fetch(`${API_BASE}/api/neighborhoods?${params}`)
+        .then(r => r.json())
+        .then(data => setBarrios(data))
+        .catch(() => setBarrios([]));
+    }, 300);
+
+    return () => clearTimeout(searchTimer.current);
+  }, [local.city, barrioSearch]);
+
+  const selectBarrio = (name) => {
+    setLocal(prev => {
+      const next = { ...prev };
+      if (next.neighborhood === name) {
+        delete next.neighborhood;
+      } else {
+        next.neighborhood = name;
+      }
+      return next;
+    });
+  };
 
   const set = (key, value) => {
     setLocal(prev => {
@@ -69,6 +106,37 @@ export function FilterDrawer({ filters, onApply, onClose }) {
                 </button>
               ))}
             </div>
+          </section>
+
+          <section className={styles.section}>
+            <h3 className={styles.label}>BARRIO</h3>
+            <input
+              type="text"
+              className={styles.input}
+              placeholder="BUSCAR BARRIO..."
+              value={barrioSearch}
+              onChange={e => setBarrioSearch(e.target.value)}
+            />
+            {local.neighborhood && (
+              <div className={styles.selectedBarrio}>
+                <span>{local.neighborhood.toUpperCase()}</span>
+                <button onClick={() => selectBarrio(local.neighborhood)} className={styles.removeBarrio}>✕</button>
+              </div>
+            )}
+            {barrios.length > 0 && !local.neighborhood && (
+              <div className={styles.barrioList}>
+                {barrios.map(b => (
+                  <button
+                    key={b.name}
+                    className={styles.barrioOption}
+                    onClick={() => selectBarrio(b.name)}
+                  >
+                    {b.name.toUpperCase()}
+                    <span className={styles.barrioCount}>{b.count}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </section>
 
           <section className={styles.section}>

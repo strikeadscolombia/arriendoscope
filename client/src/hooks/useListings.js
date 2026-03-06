@@ -4,7 +4,7 @@ import { API_BASE } from '../utils/constants';
 
 /* ── URL ↔ filter helpers ───────────────────────────────── */
 
-const FILTER_KEYS = ['city', 'source', 'propertyType', 'priceMin', 'priceMax', 'rooms', 'bathrooms'];
+const FILTER_KEYS = ['city', 'source', 'propertyType', 'priceMin', 'priceMax', 'rooms', 'bathrooms', 'neighborhood'];
 
 function filtersFromUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -44,6 +44,11 @@ function listingMatchesFilters(listing, filters) {
   }
   if (filters.priceMin && (listing.price || 0) < Number(filters.priceMin)) return false;
   if (filters.priceMax && (listing.price || 0) > Number(filters.priceMax)) return false;
+  if (filters.neighborhood) {
+    const needle = filters.neighborhood.toLowerCase();
+    const hay = (listing.neighborhood || '').toLowerCase();
+    if (!hay.includes(needle)) return false;
+  }
   if (filters.rooms && String(listing.rooms) !== String(filters.rooms)) return false;
   if (filters.bathrooms && String(listing.bathrooms) !== String(filters.bathrooms)) return false;
   return true;
@@ -127,11 +132,14 @@ export function useListings() {
 
       if (matched.length === 0) return;
 
+      // Tag as new for entry animation
+      const tagged = matched.map(l => ({ ...l, _isNew: true }));
+
       if (isNearTopRef.current) {
-        setListings(prev => [...matched, ...prev]);
-        setTotal(prev => prev + matched.length);
+        setListings(prev => [...tagged, ...prev]);
+        setTotal(prev => prev + tagged.length);
       } else {
-        setPendingNew(prev => [...matched, ...prev]);
+        setPendingNew(prev => [...tagged, ...prev]);
       }
     }
   }, []);

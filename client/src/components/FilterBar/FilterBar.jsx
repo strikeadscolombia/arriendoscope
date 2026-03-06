@@ -33,6 +33,10 @@ function getActiveLabels(filters) {
     parts.push(labels.join(' + '));
   }
 
+  if (filters.neighborhood) {
+    parts.push(filters.neighborhood.toUpperCase());
+  }
+
   if (filters.rooms) parts.push(`${filters.rooms} HAB`);
   if (filters.bathrooms) parts.push(`${filters.bathrooms} BA`);
   if (filters.priceMin) parts.push(`MIN $${Number(filters.priceMin).toLocaleString()}`);
