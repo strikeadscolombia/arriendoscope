@@ -1,26 +1,49 @@
 import { useState } from 'react';
 import { FilterDrawer } from '../FilterDrawer/FilterDrawer';
-import { SOURCES, CITIES } from '../../utils/constants';
+import { SOURCES, CITIES, PROPERTY_TYPES } from '../../utils/constants';
 import styles from './FilterBar.module.css';
 
-function getActiveLabel(filters) {
+function getActiveLabels(filters) {
   const parts = [];
+
   if (filters.city) {
-    const c = CITIES.find(c => c.value === filters.city);
-    parts.push(c?.label || filters.city.toUpperCase());
+    const cities = filters.city.split(',');
+    const labels = cities.map(v => {
+      const c = CITIES.find(c => c.value === v);
+      return c?.label || v.toUpperCase();
+    });
+    parts.push(labels.join(' + '));
   }
+
   if (filters.source) {
-    const s = SOURCES[filters.source];
-    parts.push(s?.short || filters.source.toUpperCase());
+    const sources = filters.source.split(',');
+    const labels = sources.map(v => {
+      const s = SOURCES[v];
+      return s?.short || v.toUpperCase();
+    });
+    parts.push(labels.join(' + '));
   }
+
+  if (filters.propertyType) {
+    const types = filters.propertyType.split(',');
+    const labels = types.map(v => {
+      const t = PROPERTY_TYPES.find(t => t.value === v);
+      return t?.label || v.toUpperCase();
+    });
+    parts.push(labels.join(' + '));
+  }
+
   if (filters.rooms) parts.push(`${filters.rooms} HAB`);
-  if (filters.priceMax) parts.push(`MAX $${(Number(filters.priceMax) / 1000000).toFixed(1)}M`);
+  if (filters.bathrooms) parts.push(`${filters.bathrooms} BA`);
+  if (filters.priceMin) parts.push(`MIN $${Number(filters.priceMin).toLocaleString()}`);
+  if (filters.priceMax) parts.push(`MAX $${Number(filters.priceMax).toLocaleString()}`);
+
   return parts;
 }
 
 export function FilterBar({ filters, onApply }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const activeParts = getActiveLabel(filters);
+  const activeParts = getActiveLabels(filters);
   const hasFilters = activeParts.length > 0;
 
   return (

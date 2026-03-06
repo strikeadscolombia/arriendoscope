@@ -2,19 +2,49 @@ import { useState } from 'react';
 import { SOURCES, CITIES, ROOM_OPTIONS, PROPERTY_TYPES } from '../../utils/constants';
 import styles from './FilterDrawer.module.css';
 
+// Multi-select keys: these support comma-separated values
+const MULTI_KEYS = new Set(['city', 'source', 'propertyType']);
+
 export function FilterDrawer({ filters, onApply, onClose }) {
   const [local, setLocal] = useState({ ...filters });
 
   const set = (key, value) => {
     setLocal(prev => {
       const next = { ...prev };
-      if (next[key] === value) {
-        delete next[key];
+
+      if (MULTI_KEYS.has(key)) {
+        // Multi-select toggle: append or remove from comma-separated list
+        const current = (next[key] || '').split(',').filter(Boolean);
+        const idx = current.indexOf(value);
+        if (idx >= 0) {
+          current.splice(idx, 1);
+        } else {
+          current.push(value);
+        }
+        if (current.length === 0) {
+          delete next[key];
+        } else {
+          next[key] = current.join(',');
+        }
       } else {
-        next[key] = value;
+        // Single-select toggle
+        if (next[key] === value) {
+          delete next[key];
+        } else {
+          next[key] = value;
+        }
       }
       return next;
     });
+  };
+
+  // Check if a value is selected (works for both single and multi-select)
+  const isSelected = (key, value) => {
+    if (!local[key]) return false;
+    if (MULTI_KEYS.has(key)) {
+      return local[key].split(',').includes(value);
+    }
+    return local[key] === value;
   };
 
   return (
@@ -32,7 +62,7 @@ export function FilterDrawer({ filters, onApply, onClose }) {
               {CITIES.map(c => (
                 <button
                   key={c.value}
-                  className={`${styles.option} ${local.city === c.value ? styles.selected : ''}`}
+                  className={`${styles.option} ${isSelected('city', c.value) ? styles.selected : ''}`}
                   onClick={() => set('city', c.value)}
                 >
                   {c.label}
@@ -47,7 +77,7 @@ export function FilterDrawer({ filters, onApply, onClose }) {
               {PROPERTY_TYPES.map(t => (
                 <button
                   key={t.value}
-                  className={`${styles.option} ${local.propertyType === t.value ? styles.selected : ''}`}
+                  className={`${styles.option} ${isSelected('propertyType', t.value) ? styles.selected : ''}`}
                   onClick={() => set('propertyType', t.value)}
                 >
                   {t.label}
@@ -62,7 +92,7 @@ export function FilterDrawer({ filters, onApply, onClose }) {
               {Object.entries(SOURCES).map(([key, val]) => (
                 <button
                   key={key}
-                  className={`${styles.option} ${local.source === key ? styles.selected : ''}`}
+                  className={`${styles.option} ${isSelected('source', key) ? styles.selected : ''}`}
                   onClick={() => set('source', key)}
                 >
                   {val.short}

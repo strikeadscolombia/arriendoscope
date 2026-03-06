@@ -67,8 +67,10 @@ export function getListings(filters = {}) {
   }
 
   if (filters.city) {
-    conditions.push('LOWER(city) = LOWER(@city)');
-    params.city = filters.city;
+    const cities = filters.city.split(',');
+    const placeholders = cities.map((_, i) => `@city${i}`);
+    conditions.push(`LOWER(city) IN (${placeholders.join(',')})`);
+    cities.forEach((c, i) => { params[`city${i}`] = c.toLowerCase(); });
   }
 
   if (filters.priceMin) {
@@ -92,8 +94,10 @@ export function getListings(filters = {}) {
   }
 
   if (filters.propertyType) {
-    conditions.push('property_type = @propertyType');
-    params.propertyType = filters.propertyType;
+    const types = filters.propertyType.split(',');
+    const placeholders = types.map((_, i) => `@ptype${i}`);
+    conditions.push(`property_type IN (${placeholders.join(',')})`);
+    types.forEach((t, i) => { params[`ptype${i}`] = t; });
   }
 
   if (filters.before) {
