@@ -1,29 +1,107 @@
-import { memo } from 'react';
+import { memo, useState, useEffect, useMemo, useCallback } from 'react';
 import { formatPrice } from '../../utils/formatPrice';
-import { timeAgo } from '../../utils/timeAgo';
+import { formatExactTime, minutesOnList, formatPostedAt } from '../../utils/timeAgo';
 import { SOURCES } from '../../utils/constants';
+import { ImageGallery } from '../ImageGallery/ImageGallery';
 import styles from './ListingCard.module.css';
+
+function TimeOnList({ dateStr }) {
+  const [minutes, setMinutes] = useState(() => minutesOnList(dateStr));
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setMinutes(minutesOnList(dateStr));
+    }, 60000);
+    return () => clearInterval(id);
+  }, [dateStr]);
+
+  if (minutes < 1) return <span className={styles.onList}>AHORA EN LISTA</span>;
+
+  const display = minutes < 60
+    ? `${minutes}MIN EN LISTA`
+    : minutes < 1440
+      ? `${Math.floor(minutes / 60)}H EN LISTA`
+      : `${Math.floor(minutes / 1440)}D EN LISTA`;
+
+  return <span className={styles.onList}>{display}</span>;
+}
+
+const TYPE_LABELS = {
+  habitacion: 'HAB',
+  casa: 'CASA'
+};
 
 export const ListingCard = memo(function ListingCard({ listing }) {
   const source = SOURCES[listing.source] || { label: listing.source?.toUpperCase(), short: '?' };
   const hasPhone = listing.contact_phone && listing.contact_phone.length > 5;
 
+  // WhatsApp prefix: +1 for US/Miami, +57 for Colombia
+  const waPrefix = listing.source === 'craigslist' ? '1' : '57';
+
+  const images = useMemo(() => {
+    if (listing.images) {
+      try {
+        const parsed = JSON.parse(listing.images);
+        return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+      } catch {
+        return [];
+      }
+    }
+    return listing.image_url ? [listing.image_url] : [];
+  }, [listing.images, listing.image_url]);
+
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+
+  const openGallery = useCallback((idx) => {
+    setGalleryIndex(idx);
+    setGalleryOpen(true);
+  }, []);
+
+  const closeGallery = useCallback(() => {
+    setGalleryOpen(false);
+  }, []);
+
+  const [brokenImages, setBrokenImages] = useState(new Set());
+  const handleImgError = useCallback((url) => {
+    setBrokenImages(prev => new Set(prev).add(url));
+  }, []);
+
+  const visibleImages = useMemo(
+    () => images.filter(url => !brokenImages.has(url)),
+    [images, brokenImages]
+  );
+
+  const postedAtStr = formatPostedAt(listing.posted_at);
+  const typeLabel = TYPE_LABELS[listing.property_type];
+
   return (
     <article className={styles.card}>
       <div className={styles.top}>
-        <span className={styles.badge} data-source={listing.source}>
-          {source.short}
-        </span>
-        <span className={styles.time}>{timeAgo(listing.created_at)}</span>
+        <div className={styles.badges}>
+          <span className={styles.badge} data-source={listing.source}>
+            {source.short}
+          </span>
+          {typeLabel && (
+            <span className={styles.typeBadge}>{typeLabel}</span>
+          )}
+        </div>
+        <div className={styles.timeGroup}>
+          <span className={styles.exactTime}>{formatExactTime(listing.created_at)}</span>
+          <TimeOnList dateStr={listing.created_at} />
+          {postedAtStr && (
+            <span className={styles.postedAt}>PUBLICADO {postedAtStr}</span>
+          )}
+        </div>
       </div>
 
       <div className={styles.price}>
-        {formatPrice(listing.price)}
+        {formatPrice(listing.price, listing.source)}
         <span className={styles.period}>/MES</span>
       </div>
 
       {listing.admin_fee > 0 && (
-        <div className={styles.admin}>+ {formatPrice(listing.admin_fee)} ADMIN</div>
+        <div className={styles.admin}>+ {formatPrice(listing.admin_fee, listing.source)} ADMIN</div>
       )}
 
       {listing.building_name && (
@@ -39,6 +117,35 @@ export const ListingCard = memo(function ListingCard({ listing }) {
 
       <div className={styles.city}>{(listing.city || '').toUpperCase()}</div>
 
+      {visibleImages.length > 0 && (
+        <div className={styles.thumbnails}>
+          {visibleImages.slice(0, 3).map((url, i) => (
+            <button
+              key={i}
+              className={styles.thumb}
+              onClick={() => openGallery(i)}
+              aria-label={`Ver foto ${i + 1}`}
+            >
+              <img
+                src={url}
+                alt=""
+                loading="lazy"
+                onError={() => handleImgError(url)}
+              />
+            </button>
+          ))}
+          {visibleImages.length > 3 && (
+            <button
+              className={styles.thumbMore}
+              onClick={() => openGallery(3)}
+              aria-label={`Ver ${visibleImages.length - 3} fotos más`}
+            >
+              +{visibleImages.length - 3}
+            </button>
+          )}
+        </div>
+      )}
+
       <div className={styles.features}>
         {listing.rooms && <span>{listing.rooms} HAB</span>}
         {listing.bathrooms && <span>{listing.bathrooms} BANO</span>}
@@ -53,7 +160,7 @@ export const ListingCard = memo(function ListingCard({ listing }) {
               LLAMAR
             </a>
             <a
-              href={`https://wa.me/57${listing.contact_phone.replace(/\D/g, '')}`}
+              href={`https://wa.me/${waPrefix}${listing.contact_phone.replace(/\D/g, '')}`}
               className={styles.actionBtn}
               target="_blank"
               rel="noopener noreferrer"
@@ -71,6 +178,14 @@ export const ListingCard = memo(function ListingCard({ listing }) {
           VER FUENTE →
         </a>
       </div>
+
+      {galleryOpen && visibleImages.length > 0 && (
+        <ImageGallery
+          images={visibleImages}
+          initialIndex={galleryIndex}
+          onClose={closeGallery}
+        />
+      )}
     </article>
   );
 });

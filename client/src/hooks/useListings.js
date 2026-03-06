@@ -11,6 +11,11 @@ export function useListings() {
   const [filters, setFilters] = useState({});
   const fetchingRef = useRef(false);
   const initialFetchDone = useRef(false);
+  const isNearTopRef = useRef(true);
+
+  const setIsNearTop = useCallback((val) => {
+    isNearTopRef.current = val;
+  }, []);
 
   const buildQuery = useCallback((extra = {}) => {
     const params = new URLSearchParams();
@@ -58,7 +63,14 @@ export function useListings() {
 
   const handleWsMessage = useCallback((data) => {
     if (data.type === 'new_listings' && data.listings) {
-      setPendingNew(prev => [...data.listings, ...prev]);
+      if (isNearTopRef.current) {
+        // Auto-insert when user is near top
+        setListings(prev => [...data.listings, ...prev]);
+        setTotal(prev => prev + data.listings.length);
+      } else {
+        // Accumulate for toast when scrolled down
+        setPendingNew(prev => [...data.listings, ...prev]);
+      }
     }
   }, []);
 
@@ -66,6 +78,8 @@ export function useListings() {
     setListings(prev => [...pendingNew, ...prev]);
     setTotal(prev => prev + pendingNew.length);
     setPendingNew([]);
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [pendingNew]);
 
   const applyFilters = useCallback((newFilters) => {
@@ -96,6 +110,7 @@ export function useListings() {
     loadMore,
     showNew,
     applyFilters,
-    doInitialFetch
+    doInitialFetch,
+    setIsNearTop
   };
 }

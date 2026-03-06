@@ -15,7 +15,8 @@ const CITY_NORMALIZE = {
   'pereira': 'pereira', 'manizales': 'manizales',
   'envigado': 'envigado', 'sabaneta': 'sabaneta', 'itagui': 'itagui', 'itagüí': 'itagui',
   'rionegro': 'rionegro', 'cajicá': 'cajica', 'cajica': 'cajica',
-  'chia': 'chia', 'chía': 'chia'
+  'chia': 'chia', 'chía': 'chia',
+  'miami': 'miami', 'miami beach': 'miami', 'miami-dade': 'miami'
 };
 
 function normalizeCity(city) {
@@ -43,7 +44,11 @@ export function normalizeListing(raw) {
     contact_name: raw.contact_name || null,
     source_url: raw.source_url,
     image_url: raw.image_url || null,
+    images: raw.images
+      ? JSON.stringify(Array.isArray(raw.images) ? raw.images.filter(Boolean) : [raw.images])
+      : null,
     posted_at: raw.posted_at || null,
+    property_type: raw.property_type || 'apartamento',
     fingerprint: generateFingerprint(raw.source, raw.external_id || raw.source_url, raw.price)
   };
 }

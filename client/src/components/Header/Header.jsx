@@ -7,8 +7,7 @@ export function Header({ connected, total }) {
   return (
     <header className={styles.header}>
       <div className={styles.left}>
-        <h1 className={styles.logo}>MEMESCOPE</h1>
-        <span className={styles.subtitle}>ARRIENDOS</span>
+        <h1 className={styles.logo}>ARRIENDOSCOPE</h1>
       </div>
       <div className={styles.right}>
         <div className={styles.stats}>

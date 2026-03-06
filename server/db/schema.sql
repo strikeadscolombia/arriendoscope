@@ -17,8 +17,10 @@ CREATE TABLE IF NOT EXISTS listings (
     contact_name TEXT,
     source_url TEXT NOT NULL,
     image_url TEXT,
+    images TEXT,
     scraped_at TEXT NOT NULL DEFAULT (datetime('now')),
     posted_at TEXT,
+    property_type TEXT DEFAULT 'apartamento',
     fingerprint TEXT UNIQUE NOT NULL,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -29,3 +31,4 @@ CREATE INDEX IF NOT EXISTS idx_listings_price ON listings(price);
 CREATE INDEX IF NOT EXISTS idx_listings_rooms ON listings(rooms);
 CREATE INDEX IF NOT EXISTS idx_listings_created ON listings(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_listings_fingerprint ON listings(fingerprint);
+CREATE INDEX IF NOT EXISTS idx_listings_property_type ON listings(property_type);

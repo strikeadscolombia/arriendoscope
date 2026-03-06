@@ -14,19 +14,27 @@ const CITY_SLUGS = {
   cartagena: 'cartagena'
 };
 
+const TYPE_SLUGS = {
+  apartamento: 'apartamentos',
+  casa: 'casas',
+  habitacion: 'habitaciones'
+};
+
 export class FincaRaizScraper extends BaseScraper {
   constructor() {
     super('fincaraiz', {
       interval: 10 * 60 * 1000,
       maxPages: 3,
-      baseUrl: 'https://www.fincaraiz.com.co'
+      baseUrl: 'https://www.fincaraiz.com.co',
+      propertyTypes: ['apartamento', 'casa', 'habitacion']
     });
   }
 
-  async fetchPage(city, page) {
+  async fetchPage(city, page, propertyType) {
     const slug = CITY_SLUGS[city] || city;
+    const typeSlug = TYPE_SLUGS[propertyType] || 'apartamentos';
     const pageParam = page > 0 ? `?pagina=${page + 1}` : '';
-    const url = `${this.baseUrl}/arriendo/apartamentos/${slug}${pageParam}`;
+    const url = `${this.baseUrl}/arriendo/${typeSlug}/${slug}${pageParam}`;
 
     const response = await fetch(url, {
       headers: defaultHeaders()
@@ -131,7 +139,7 @@ export class FincaRaizScraper extends BaseScraper {
     return listings;
   }
 
-  parseListing(item, city) {
+  parseListing(item, city, propertyType) {
     const locations = item.locations || {};
 
     // Extract price - FincaRaiz uses {amount, admin_included, currency} object
@@ -165,8 +173,12 @@ export class FincaRaizScraper extends BaseScraper {
       const phone = owner.masked_phone?.replace(/[^\d+]/g, '') || null;
       const contactName = owner.name || null;
 
-      // Image
+      // Images
       const imageUrl = item.img || item.imagen || item.thumbnail || null;
+      const imageArray = Array.isArray(item.images) ? item.images
+        : Array.isArray(item.gallery) ? item.gallery
+        : Array.isArray(item.media) ? item.media.map(m => m.url || m.image || m).filter(Boolean)
+        : null;
 
       // Area and rooms from description or dedicated fields
       const desc = item.description || '';
@@ -211,7 +223,10 @@ export class FincaRaizScraper extends BaseScraper {
         contact_phone: phone,
         contact_name: contactName,
         source_url: sourceUrl,
-        image_url: imageUrl
+        image_url: imageUrl,
+        images: imageArray || (imageUrl ? [imageUrl] : null),
+        posted_at: item.created_at || item.published_at || item.date || item.datePublished || item.fechaCreacion || null,
+        property_type: propertyType
       });
     }
 
@@ -235,7 +250,10 @@ export class FincaRaizScraper extends BaseScraper {
       source_url: item.link
         ? (item.link.startsWith('http') ? item.link : `${this.baseUrl}${item.link}`)
         : this.baseUrl,
-      image_url: item.image_url || null
+      image_url: item.image_url || null,
+      images: item.image_url ? [item.image_url] : null,
+      posted_at: null,
+      property_type: propertyType
     });
   }
 }

@@ -15,6 +15,15 @@ export function getDb() {
 
     const schema = readFileSync(join(__dirname, 'schema.sql'), 'utf-8');
     db.exec(schema);
+
+    // Migrations: add columns if not exists
+    const migrations = [
+      `ALTER TABLE listings ADD COLUMN images TEXT`,
+      `ALTER TABLE listings ADD COLUMN property_type TEXT DEFAULT 'apartamento'`
+    ];
+    for (const sql of migrations) {
+      try { db.exec(sql); } catch (e) { /* already exists */ }
+    }
   }
   return db;
 }

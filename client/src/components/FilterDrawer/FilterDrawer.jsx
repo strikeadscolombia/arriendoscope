@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SOURCES, CITIES, ROOM_OPTIONS } from '../../utils/constants';
+import { SOURCES, CITIES, ROOM_OPTIONS, PROPERTY_TYPES } from '../../utils/constants';
 import styles from './FilterDrawer.module.css';
 
 export function FilterDrawer({ filters, onApply, onClose }) {
@@ -36,6 +36,21 @@ export function FilterDrawer({ filters, onApply, onClose }) {
                   onClick={() => set('city', c.value)}
                 >
                   {c.label}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className={styles.section}>
+            <h3 className={styles.label}>TIPO</h3>
+            <div className={styles.options}>
+              {PROPERTY_TYPES.map(t => (
+                <button
+                  key={t.value}
+                  className={`${styles.option} ${local.propertyType === t.value ? styles.selected : ''}`}
+                  onClick={() => set('propertyType', t.value)}
+                >
+                  {t.label}
                 </button>
               ))}
             </div>

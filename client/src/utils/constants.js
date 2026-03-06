@@ -2,7 +2,8 @@ export const SOURCES = {
   metrocuadrado: { label: 'METROCUADRADO', short: 'MC' },
   ciencuadras: { label: 'CIENCUADRAS', short: 'CC' },
   mitula: { label: 'MITULA', short: 'MT' },
-  fincaraiz: { label: 'FINCARAIZ', short: 'FR' }
+  fincaraiz: { label: 'FINCARAIZ', short: 'FR' },
+  craigslist: { label: 'CRAIGSLIST', short: 'CL' }
 };
 
 export const CITIES = [
@@ -11,7 +12,14 @@ export const CITIES = [
   { value: 'cali', label: 'CALI' },
   { value: 'barranquilla', label: 'BARRANQUILLA' },
   { value: 'bucaramanga', label: 'BUCARAMANGA' },
-  { value: 'cartagena', label: 'CARTAGENA' }
+  { value: 'cartagena', label: 'CARTAGENA' },
+  { value: 'miami', label: 'MIAMI' }
+];
+
+export const PROPERTY_TYPES = [
+  { value: 'apartamento', label: 'APTO' },
+  { value: 'casa', label: 'CASA' },
+  { value: 'habitacion', label: 'HAB' }
 ];
 
 export const ROOM_OPTIONS = [

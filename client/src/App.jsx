@@ -18,7 +18,8 @@ function AppContent() {
     loadMore,
     showNew,
     applyFilters,
-    doInitialFetch
+    doInitialFetch,
+    setIsNearTop
   } = useListings();
 
   useEffect(() => {
@@ -35,6 +36,7 @@ function AppContent() {
         loading={loading}
         hasMore={hasMore}
         loadMore={loadMore}
+        onScrollPositionChange={setIsNearTop}
       />
     </>
   );

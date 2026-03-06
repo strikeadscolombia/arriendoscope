@@ -19,3 +19,37 @@ export function timeAgo(dateStr) {
   }
   return '';
 }
+
+const MONTHS = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+
+export function formatExactTime(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z');
+  if (isNaN(d.getTime())) return '';
+  const day = d.getDate();
+  const month = MONTHS[d.getMonth()];
+  const hours = String(d.getHours()).padStart(2, '0');
+  const mins = String(d.getMinutes()).padStart(2, '0');
+  return `${day} ${month} ${hours}:${mins}`;
+}
+
+export function minutesOnList(dateStr) {
+  if (!dateStr) return 0;
+  const d = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z');
+  if (isNaN(d.getTime())) return 0;
+  return Math.max(0, Math.floor((Date.now() - d.getTime()) / 60000));
+}
+
+export function formatPostedAt(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z');
+  if (isNaN(d.getTime())) return null;
+  const day = d.getDate();
+  const month = MONTHS[d.getMonth()];
+  const year = d.getFullYear();
+  const now = new Date();
+  if (year !== now.getFullYear()) {
+    return `${day} ${month} ${year}`;
+  }
+  return `${day} ${month}`;
+}

@@ -14,20 +14,28 @@ const CITY_SLUGS = {
   cartagena: 'cartagena-de-indias'
 };
 
+const TYPE_SLUGS = {
+  apartamento: 'apartamento',
+  casa: 'casa',
+  habitacion: 'habitacion'
+};
+
 export class CiencuadrasScraper extends BaseScraper {
   constructor() {
     super('ciencuadras', {
       interval: 7 * 60 * 1000,
       maxPages: 3,
-      baseUrl: 'https://www.ciencuadras.com'
+      baseUrl: 'https://www.ciencuadras.com',
+      propertyTypes: ['apartamento', 'casa', 'habitacion']
     });
   }
 
-  async fetchPage(city, page) {
+  async fetchPage(city, page, propertyType) {
     const slug = CITY_SLUGS[city] || city;
+    const typeSlug = TYPE_SLUGS[propertyType] || 'apartamento';
     const url = page === 0
-      ? `${this.baseUrl}/arriendo/apartamento/${slug}`
-      : `${this.baseUrl}/arriendo/apartamento/${slug}?pagina=${page + 1}`;
+      ? `${this.baseUrl}/arriendo/${typeSlug}/${slug}`
+      : `${this.baseUrl}/arriendo/${typeSlug}/${slug}?pagina=${page + 1}`;
 
     const response = await fetch(url, {
       headers: {
@@ -148,7 +156,7 @@ export class CiencuadrasScraper extends BaseScraper {
     return listings;
   }
 
-  parseListing(item, city) {
+  parseListing(item, city, propertyType) {
     // From JSON-LD
     if (item._fromJsonLd) {
       const titleParts = (item.name || '').split(' - ');
@@ -167,14 +175,17 @@ export class CiencuadrasScraper extends BaseScraper {
         building_name: null,
         price: item.price,
         admin_fee: 0,
-        rooms: null, // JSON-LD doesn't include rooms, would need detail page
+        rooms: null,
         bathrooms: item.bathrooms,
         area_m2: item.area_m2,
         stratum: null,
         contact_phone: null,
         contact_name: null,
         source_url: item.url.startsWith('http') ? item.url : `${this.baseUrl}${item.url}`,
-        image_url: item.image || null
+        image_url: item.image || null,
+        images: item.image ? [item.image] : null,
+        posted_at: null,
+        property_type: propertyType
       });
     }
 
@@ -199,7 +210,12 @@ export class CiencuadrasScraper extends BaseScraper {
         source_url: item.link
           ? (item.link.startsWith('http') ? item.link : `${this.baseUrl}${item.link}`)
           : `${this.baseUrl}/inmueble/${item.id || ''}`,
-        image_url: item.imagen || item.foto || null
+        image_url: item.imagen || item.foto || null,
+        images: Array.isArray(item.imagenes || item.galeria || item.fotos)
+          ? (item.imagenes || item.galeria || item.fotos)
+          : (item.imagen || item.foto ? [item.imagen || item.foto] : null),
+        posted_at: item.fechaPublicacion || item.datePublished || item.fechaCreacion || null,
+        property_type: propertyType
       });
     }
 
@@ -223,7 +239,10 @@ export class CiencuadrasScraper extends BaseScraper {
       source_url: item.link
         ? (item.link.startsWith('http') ? item.link : `${this.baseUrl}${item.link}`)
         : this.baseUrl,
-      image_url: item.image_url || null
+      image_url: item.image_url || null,
+      images: item.image_url ? [item.image_url] : null,
+      posted_at: null,
+      property_type: propertyType
     });
   }
 }

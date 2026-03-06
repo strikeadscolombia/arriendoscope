@@ -12,6 +12,7 @@ router.get('/listings', (req, res) => {
       priceMax: req.query.priceMax || null,
       rooms: req.query.rooms || null,
       bathrooms: req.query.bathrooms || null,
+      propertyType: req.query.propertyType || null,
       before: req.query.before || null,
       limit: req.query.limit || 50
     };

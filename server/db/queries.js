@@ -6,11 +6,11 @@ export function insertListing(listing) {
     INSERT OR IGNORE INTO listings
       (external_id, source, title, address, neighborhood, city, building_name,
        price, admin_fee, rooms, bathrooms, area_m2, stratum,
-       contact_phone, contact_name, source_url, image_url, posted_at, fingerprint)
+       contact_phone, contact_name, source_url, image_url, images, posted_at, property_type, fingerprint)
     VALUES
       (@external_id, @source, @title, @address, @neighborhood, @city, @building_name,
        @price, @admin_fee, @rooms, @bathrooms, @area_m2, @stratum,
-       @contact_phone, @contact_name, @source_url, @image_url, @posted_at, @fingerprint)
+       @contact_phone, @contact_name, @source_url, @image_url, @images, @posted_at, @property_type, @fingerprint)
   `);
   const result = stmt.run(listing);
   return result.changes > 0;
@@ -67,6 +67,11 @@ export function getListings(filters = {}) {
   if (filters.bathrooms) {
     conditions.push('bathrooms = @bathrooms');
     params.bathrooms = Number(filters.bathrooms);
+  }
+
+  if (filters.propertyType) {
+    conditions.push('property_type = @propertyType');
+    params.propertyType = filters.propertyType;
   }
 
   if (filters.before) {

@@ -14,18 +14,26 @@ const CITY_MAP = {
   cartagena: 'cartagena'
 };
 
+const TYPE_SLUGS = {
+  apartamento: 'apartamento',
+  casa: 'casa',
+  habitacion: 'habitacion'
+};
+
 export class MetrocuadradoScraper extends BaseScraper {
   constructor() {
     super('metrocuadrado', {
       interval: 5 * 60 * 1000,
       maxPages: 3,
-      baseUrl: 'https://www.metrocuadrado.com'
+      baseUrl: 'https://www.metrocuadrado.com',
+      propertyTypes: ['apartamento', 'casa', 'habitacion']
     });
   }
 
-  async fetchPage(city, page) {
+  async fetchPage(city, page, propertyType) {
     const from = page * 20;
-    const url = `${this.baseUrl}/arriendo/apartamento/${CITY_MAP[city] || city}/?search=form&from=${from}`;
+    const typeSlug = TYPE_SLUGS[propertyType] || 'apartamento';
+    const url = `${this.baseUrl}/arriendo/${typeSlug}/${CITY_MAP[city] || city}/?search=form&from=${from}`;
 
     const response = await fetch(url, {
       headers: defaultHeaders()
@@ -220,7 +228,7 @@ export class MetrocuadradoScraper extends BaseScraper {
     return parseInt(val) || null;
   }
 
-  parseListing(item, city) {
+  parseListing(item, city, propertyType) {
     const externalId = item.midinmueble || item.id || item.idInmueble || item.codigo || String(Math.random());
     const price = this.num(item.mvalorarriendo) || this.num(item.valorArriendo) || this.num(item.precio) || 0;
 
@@ -228,6 +236,13 @@ export class MetrocuadradoScraper extends BaseScraper {
 
     // WhatsApp number is often the best contact - clean it
     const whatsapp = item.whatsapp ? item.whatsapp.replace(/\D/g, '').replace(/^57/, '') : null;
+
+    // Images: try multiple gallery field names
+    const gallery = Array.isArray(item.mgaleriainmueble) ? item.mgaleriainmueble
+      : Array.isArray(item.imagenes) ? item.imagenes
+      : Array.isArray(item.galeria) ? item.galeria
+      : Array.isArray(item.fotos) ? item.fotos
+      : null;
 
     return normalizeListing({
       external_id: externalId,
@@ -248,8 +263,10 @@ export class MetrocuadradoScraper extends BaseScraper {
       source_url: item.link
         ? `${this.baseUrl}${item.link}`
         : `${this.baseUrl}/inmueble/${externalId}`,
-      image_url: item.imageLink || item.imagen || (item.mgaleriainmueble && item.mgaleriainmueble[0]) || null,
-      posted_at: item.fechaCreacion || null
+      image_url: item.imageLink || (gallery && gallery[0]) || item.imagen || null,
+      images: gallery || (item.imageLink ? [item.imageLink] : null),
+      posted_at: item.fechaCreacion || item.fechaPublicacion || null,
+      property_type: propertyType
     });
   }
 }
