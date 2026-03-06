@@ -119,7 +119,7 @@ export const ListingCard = memo(function ListingCard({ listing }) {
 
       {visibleImages.length > 0 && (
         <div className={styles.thumbnails}>
-          {visibleImages.slice(0, 6).map((url, i) => (
+          {visibleImages.slice(0, 2).map((url, i) => (
             <button
               key={i}
               className={styles.thumb}
@@ -134,13 +134,13 @@ export const ListingCard = memo(function ListingCard({ listing }) {
               />
             </button>
           ))}
-          {visibleImages.length > 6 && (
+          {visibleImages.length > 2 && (
             <button
               className={styles.thumbMore}
-              onClick={() => openGallery(6)}
-              aria-label={`Ver ${visibleImages.length - 6} fotos más`}
+              onClick={() => openGallery(0)}
+              aria-label={`Ver ${visibleImages.length - 2} fotos más`}
             >
-              +{visibleImages.length - 6}
+              +{visibleImages.length - 2}
             </button>
           )}
         </div>
