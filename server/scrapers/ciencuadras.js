@@ -23,7 +23,7 @@ const TYPE_SLUGS = {
 export class CiencuadrasScraper extends BaseScraper {
   constructor() {
     super('ciencuadras', {
-      interval: 7 * 60 * 1000,
+      interval: 4 * 60 * 1000,  // 4 min
       maxPages: 3,
       baseUrl: 'https://www.ciencuadras.com',
       propertyTypes: ['apartamento', 'casa', 'habitacion']

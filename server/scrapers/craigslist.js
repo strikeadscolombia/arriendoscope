@@ -14,7 +14,7 @@ const TYPE_CODES = {
 export class CraigslistScraper extends BaseScraper {
   constructor() {
     super('craigslist', {
-      interval: 15 * 60 * 1000,  // 15 min, respect rate limits
+      interval: 8 * 60 * 1000,  // 8 min
       maxPages: 2,
       baseUrl: 'https://miami.craigslist.org',
       propertyTypes: ['apartamento', 'habitacion', 'casa']

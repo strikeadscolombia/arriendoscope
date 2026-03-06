@@ -4,7 +4,7 @@ import { API_BASE } from '../utils/constants';
 
 /* ── URL ↔ filter helpers ───────────────────────────────── */
 
-const FILTER_KEYS = ['city', 'source', 'propertyType', 'priceMin', 'priceMax', 'rooms', 'bathrooms', 'neighborhood'];
+const FILTER_KEYS = ['city', 'source', 'propertyType', 'priceMin', 'priceMax', 'rooms', 'bathrooms', 'neighborhood', 'timeRange'];
 
 function filtersFromUrl() {
   const params = new URLSearchParams(window.location.search);

@@ -132,6 +132,20 @@ export function getListings(filters = {}) {
     params.neighborhood = `%${filters.neighborhood.toLowerCase()}%`;
   }
 
+  // Time range filter: today, 3days, week, month
+  if (filters.timeRange) {
+    const rangeMap = {
+      today: "date(created_at) = date('now')",
+      '3days': "created_at >= datetime('now', '-3 days')",
+      week: "created_at >= datetime('now', '-7 days')",
+      month: "created_at >= datetime('now', '-30 days')"
+    };
+    const condition = rangeMap[filters.timeRange];
+    if (condition) {
+      conditions.push(condition);
+    }
+  }
+
   if (filters.before) {
     conditions.push('created_at < @before');
     params.before = filters.before;

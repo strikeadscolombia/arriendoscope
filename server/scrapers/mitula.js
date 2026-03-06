@@ -17,7 +17,7 @@ const CITY_SLUGS = {
 export class MitulaScraper extends BaseScraper {
   constructor() {
     super('mitula', {
-      interval: 10 * 60 * 1000,
+      interval: 8 * 60 * 1000,  // 8 min
       maxPages: 2,
       baseUrl: 'https://casas.mitula.com.co'
     });

@@ -99,29 +99,31 @@ export class Scheduler {
   async start() {
     logger.info('[scheduler] Starting initial scrape of all sources...');
 
-    // Run all scrapers once on startup, staggered by 10s
+    // Run all scrapers once on startup, staggered by 5s for faster initial load
     for (let i = 0; i < this.scraperConfigs.length; i++) {
       setTimeout(() => {
         this.runScraper(this.scraperConfigs[i]);
-      }, i * 10000);
+      }, i * 5000);
     }
 
-    // Set up recurring intervals
+    // Set up recurring intervals with slight random jitter to avoid thundering herd
     for (const config of this.scraperConfigs) {
+      const jitter = Math.floor(Math.random() * 30000); // 0-30s jitter
       const timer = setInterval(() => {
         this.runScraper(config);
-      }, config.scraper.interval);
+      }, config.scraper.interval + jitter);
       this.timers.push(timer);
+      logger.info(`[scheduler] ${config.scraper.name}: every ${Math.round(config.scraper.interval / 60000)}min`);
     }
 
-    // Image enrichment: start 5 min after boot, then every 10 min
+    // Image enrichment: start 2 min after boot, then every 7 min
     const enrichTimer = setTimeout(() => {
       this.enrichCraigslistImages();
       const recurring = setInterval(() => {
         this.enrichCraigslistImages();
-      }, 10 * 60 * 1000);
+      }, 7 * 60 * 1000);
       this.timers.push(recurring);
-    }, 5 * 60 * 1000);
+    }, 2 * 60 * 1000);
     this.timers.push(enrichTimer);
   }
 

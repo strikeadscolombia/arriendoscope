@@ -23,7 +23,7 @@ const TYPE_SLUGS = {
 export class FincaRaizScraper extends BaseScraper {
   constructor() {
     super('fincaraiz', {
-      interval: 10 * 60 * 1000,
+      interval: 5 * 60 * 1000,  // 5 min
       maxPages: 3,
       baseUrl: 'https://www.fincaraiz.com.co',
       propertyTypes: ['apartamento', 'casa', 'habitacion']

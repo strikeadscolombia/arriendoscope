@@ -1,15 +1,26 @@
 import Database from 'better-sqlite3';
-import { readFileSync } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// Use DATA_DIR env var for persistent storage (e.g. Railway Volume at /data)
+// Falls back to server/ directory for local development
+const DATA_DIR = process.env.DATA_DIR || join(__dirname, '..');
+const DB_PATH = join(DATA_DIR, 'arriendos.db');
+
 let db;
 
 export function getDb() {
   if (!db) {
-    db = new Database(join(__dirname, '..', 'arriendos.db'));
+    // Ensure data directory exists
+    if (!existsSync(DATA_DIR)) {
+      mkdirSync(DATA_DIR, { recursive: true });
+    }
+
+    console.log(`[db] Opening database at: ${DB_PATH}`);
+    db = new Database(DB_PATH);
     db.pragma('journal_mode = WAL');
     db.pragma('foreign_keys = ON');
 

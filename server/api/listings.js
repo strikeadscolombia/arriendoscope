@@ -14,6 +14,7 @@ router.get('/listings', (req, res) => {
       bathrooms: req.query.bathrooms || null,
       propertyType: req.query.propertyType || null,
       neighborhood: req.query.neighborhood || null,
+      timeRange: req.query.timeRange || null,
       before: req.query.before || null,
       limit: req.query.limit || 50
     };
