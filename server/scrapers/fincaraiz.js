@@ -173,12 +173,21 @@ export class FincaRaizScraper extends BaseScraper {
       const phone = owner.masked_phone?.replace(/[^\d+]/g, '') || null;
       const contactName = owner.name || null;
 
-      // Images
+      // Images — item.images can be [{id, image, tag}, ...] objects or strings
       const imageUrl = item.img || item.imagen || item.thumbnail || null;
-      const imageArray = Array.isArray(item.images) ? item.images
-        : Array.isArray(item.gallery) ? item.gallery
-        : Array.isArray(item.media) ? item.media.map(m => m.url || m.image || m).filter(Boolean)
-        : null;
+      let imageArray = null;
+      if (Array.isArray(item.images) && item.images.length > 0) {
+        imageArray = item.images.map(img => {
+          if (typeof img === 'string') return img;
+          return img?.image || img?.url || img?.src || null;
+        }).filter(Boolean);
+      } else if (Array.isArray(item.gallery)) {
+        imageArray = item.gallery.map(img =>
+          typeof img === 'string' ? img : (img?.url || img?.image || null)
+        ).filter(Boolean);
+      } else if (Array.isArray(item.media)) {
+        imageArray = item.media.map(m => m.url || m.image || m).filter(Boolean);
+      }
 
       // Area and rooms from description or dedicated fields
       const desc = item.description || '';

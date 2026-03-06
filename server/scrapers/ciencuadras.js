@@ -260,4 +260,56 @@ export class CiencuadrasScraper extends BaseScraper {
       property_type: propertyType
     });
   }
+
+  // Fetch full image gallery from property detail page
+  async fetchDetailImages(sourceUrl) {
+    try {
+      const response = await fetch(sourceUrl, {
+        headers: {
+          ...defaultHeaders(),
+          'Referer': this.baseUrl
+        }
+      });
+      if (!response.ok) return null;
+
+      const html = await response.text();
+      const images = [];
+
+      // Strategy 1: Extract S3 image URLs from the page
+      // Ciencuadras uses: https://www-img-cc.s3.amazonaws.com/inmuebles/images/{id}/{hash}_plana.jpeg
+      const s3Regex = /https:\/\/www-img-cc\.s3\.amazonaws\.com\/inmuebles\/images\/[^"'\s&;]+/g;
+      let match;
+      while ((match = s3Regex.exec(html)) !== null) {
+        // Unescape HTML entities that ciencuadras uses (&q; for quotes)
+        const url = match[0].replace(/&amp;/g, '&');
+        images.push(url);
+      }
+
+      // Strategy 2: Look for gallery objects with "url" field (encoded with &q;)
+      if (images.length === 0) {
+        // Unescape the HTML entities first
+        const unescaped = html.replace(/&q;/g, '"').replace(/&amp;/g, '&');
+        const urlRegex = /"url"\s*:\s*"(https:\/\/www-img-cc\.s3\.amazonaws\.com\/[^"]+)"/g;
+        while ((match = urlRegex.exec(unescaped)) !== null) {
+          images.push(match[1]);
+        }
+      }
+
+      // Strategy 3: Any img tags with ciencuadras image CDN
+      if (images.length === 0) {
+        const $ = cheerio.load(html);
+        $('img[src*="s3.amazonaws.com"], img[data-src*="s3.amazonaws.com"]').each((_, el) => {
+          const src = $(el).attr('src') || $(el).attr('data-src');
+          if (src && src.includes('inmuebles/images')) images.push(src);
+        });
+      }
+
+      // Deduplicate
+      const unique = [...new Set(images)];
+      return unique.length > 0 ? unique : null;
+    } catch (err) {
+      logger.warn(`[ciencuadras] Detail fetch failed for ${sourceUrl}: ${err.message}`);
+      return null;
+    }
+  }
 }

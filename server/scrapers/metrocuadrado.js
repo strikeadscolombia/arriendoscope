@@ -238,11 +238,24 @@ export class MetrocuadradoScraper extends BaseScraper {
     const whatsapp = item.whatsapp ? item.whatsapp.replace(/\D/g, '').replace(/^57/, '') : null;
 
     // Images: try multiple gallery field names
-    const gallery = Array.isArray(item.mgaleriainmueble) ? item.mgaleriainmueble
+    const rawGallery = Array.isArray(item.mgaleriainmueble) ? item.mgaleriainmueble
       : Array.isArray(item.imagenes) ? item.imagenes
       : Array.isArray(item.galeria) ? item.galeria
       : Array.isArray(item.fotos) ? item.fotos
       : null;
+
+    // mgaleriainmueble contains image IDs like "3155-M6418174_1" not full URLs
+    // Construct full URLs: https://multimedia.metrocuadrado.com/{propId}/{imgId}_x.jpg
+    const gallery = rawGallery ? rawGallery.map(imgId => {
+      if (typeof imgId === 'string' && !imgId.startsWith('http')) {
+        // Extract property ID from image ID (e.g., "3155-M6418174_1" -> "3155-M6418174")
+        const propId = imgId.replace(/_\d+$/, '');
+        return `https://multimedia.metrocuadrado.com/${propId}/${imgId}_x.jpg`;
+      }
+      return imgId; // Already a full URL
+    }).filter(Boolean) : null;
+
+    const mainImage = item.imageLink || (gallery && gallery[0]) || item.imagen || null;
 
     return normalizeListing({
       external_id: externalId,
@@ -263,10 +276,57 @@ export class MetrocuadradoScraper extends BaseScraper {
       source_url: item.link
         ? `${this.baseUrl}${item.link}`
         : `${this.baseUrl}/inmueble/${externalId}`,
-      image_url: item.imageLink || (gallery && gallery[0]) || item.imagen || null,
-      images: gallery || (item.imageLink ? [item.imageLink] : null),
+      image_url: mainImage,
+      images: gallery || (mainImage ? [mainImage] : null),
       posted_at: item.fechaCreacion || item.fechaPublicacion || null,
       property_type: propertyType
     });
+  }
+
+  // Fetch full gallery from detail page (fallback if search didn't have gallery)
+  async fetchDetailImages(sourceUrl) {
+    try {
+      const response = await fetch(sourceUrl, { headers: defaultHeaders() });
+      if (!response.ok) return null;
+
+      const html = await response.text();
+      const images = [];
+
+      // Strategy 1: Extract from RSC chunks (self.__next_f.push) with image objects
+      const imgRegex = /"image"\s*:\s*"(https:\/\/multimedia\.metrocuadrado\.com\/[^"]+)"/g;
+      let match;
+      while ((match = imgRegex.exec(html)) !== null) {
+        images.push(match[1]);
+      }
+
+      // Strategy 2: Look for mgaleriainmueble IDs in RSC data
+      if (images.length === 0) {
+        const galleryMatch = html.match(/"mgaleriainmueble"\s*:\s*\[([^\]]+)\]/);
+        if (galleryMatch) {
+          const ids = galleryMatch[1].match(/"([^"]+)"/g);
+          if (ids) {
+            for (const rawId of ids) {
+              const imgId = rawId.replace(/"/g, '');
+              const propId = imgId.replace(/_\d+$/, '');
+              images.push(`https://multimedia.metrocuadrado.com/${propId}/${imgId}_x.jpg`);
+            }
+          }
+        }
+      }
+
+      // Strategy 3: Any multimedia.metrocuadrado.com URLs with _x or _h suffix
+      if (images.length === 0) {
+        const urlRegex = /https:\/\/multimedia\.metrocuadrado\.com\/[^"'\s]+_[xh]\.(?:jpg|webp|png)/g;
+        while ((match = urlRegex.exec(html)) !== null) {
+          images.push(match[0]);
+        }
+      }
+
+      const unique = [...new Set(images)];
+      return unique.length > 0 ? unique : null;
+    } catch (err) {
+      logger.warn(`[metrocuadrado] Detail fetch failed for ${sourceUrl}: ${err.message}`);
+      return null;
+    }
   }
 }
