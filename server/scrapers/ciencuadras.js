@@ -86,10 +86,25 @@ export class CiencuadrasScraper extends BaseScraper {
               const geo = apt.geo || {};
               const floor = apt.floorSize || {};
 
+              // Handle image as string or array
+              const rawImage = item.image;
+              const imageUrl = Array.isArray(rawImage) ? rawImage[0] : (rawImage || '');
+              const imageArray = Array.isArray(rawImage) ? rawImage : (rawImage ? [rawImage] : []);
+
+              // Also check apt.photo and apt.image (Schema.org Accommodation)
+              const aptPhotos = apt.photo || apt.image || [];
+              const aptPhotoUrls = Array.isArray(aptPhotos)
+                ? aptPhotos.map(p => typeof p === 'string' ? p : (p?.url || p?.contentUrl || null)).filter(Boolean)
+                : (typeof aptPhotos === 'string' ? [aptPhotos] : []);
+
+              // Merge all image sources, deduplicate
+              const allImages = [...new Set([...imageArray, ...aptPhotoUrls])].filter(Boolean);
+
               return {
                 name: item.name || '',
                 url: el.url || '',
-                image: item.image || '',
+                image: imageUrl,
+                imageArray: allImages,
                 price: parseInt(offers.price) || 0,
                 bathrooms: parseInt(apt.numberOfBathroomsTotal) || null,
                 area_m2: parseFloat(floor.value) || null,
@@ -183,7 +198,7 @@ export class CiencuadrasScraper extends BaseScraper {
         contact_name: null,
         source_url: item.url.startsWith('http') ? item.url : `${this.baseUrl}${item.url}`,
         image_url: item.image || null,
-        images: item.image ? [item.image] : null,
+        images: (item.imageArray && item.imageArray.length > 0) ? item.imageArray : (item.image ? [item.image] : null),
         posted_at: null,
         property_type: propertyType
       });

@@ -32,6 +32,28 @@ export function insertMany(listings) {
   return inserted;
 }
 
+export function updateListingImages(fingerprint, imageUrl, imagesJson) {
+  const db = getDb();
+  return db.prepare(`
+    UPDATE listings
+    SET image_url = @imageUrl, images = @images
+    WHERE fingerprint = @fingerprint
+  `).run({ fingerprint, imageUrl, images: imagesJson });
+}
+
+export function getListingsNeedingImages(source, limit = 20) {
+  const db = getDb();
+  return db.prepare(`
+    SELECT id, fingerprint, source_url, images
+    FROM listings
+    WHERE source = @source
+      AND (images IS NULL OR images = 'null' OR images = '[]' OR length(images) < 5
+           OR (json_valid(images) AND json_array_length(images) <= 1))
+    ORDER BY created_at DESC
+    LIMIT @limit
+  `).all({ source, limit });
+}
+
 export function getListings(filters = {}) {
   const db = getDb();
   const conditions = [];

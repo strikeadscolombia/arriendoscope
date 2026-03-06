@@ -186,6 +186,75 @@ export class CraigslistScraper extends BaseScraper {
     return items;
   }
 
+  async fetchDetailImages(sourceUrl) {
+    try {
+      const response = await fetch(sourceUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9'
+        }
+      });
+
+      if (!response.ok) return null;
+
+      const html = await response.text();
+      const $ = cheerio.load(html);
+      const images = [];
+
+      // Strategy 1: thumbs strip links (most common on Craigslist detail pages)
+      $('a.thumb').each((_, el) => {
+        const href = $(el).attr('href');
+        if (href && href.startsWith('http')) images.push(href);
+      });
+
+      // Strategy 2: #thumbs container
+      if (images.length === 0) {
+        $('#thumbs a').each((_, el) => {
+          const href = $(el).attr('href');
+          if (href && href.startsWith('http')) images.push(href);
+        });
+      }
+
+      // Strategy 3: swipe gallery images
+      if (images.length === 0) {
+        $('.swipe .slide img, .gallery img, .iw img').each((_, el) => {
+          const src = $(el).attr('src') || $(el).attr('data-src');
+          if (src && src.startsWith('http') && !src.includes('static')) images.push(src);
+        });
+      }
+
+      // Strategy 4: var imgList in script tags
+      if (images.length === 0) {
+        const scriptMatch = html.match(/var\s+imgList\s*=\s*(\[[\s\S]*?\]);/);
+        if (scriptMatch) {
+          try {
+            const imgList = JSON.parse(scriptMatch[1]);
+            for (const img of imgList) {
+              const url = typeof img === 'string' ? img : (img?.url || img?.href || null);
+              if (url) images.push(url);
+            }
+          } catch { /* skip */ }
+        }
+      }
+
+      // Strategy 5: any img with craigslist image CDN URLs
+      if (images.length === 0) {
+        $('img[src*="images.craigslist"]').each((_, el) => {
+          const src = $(el).attr('src');
+          if (src) images.push(src);
+        });
+      }
+
+      // Deduplicate
+      const unique = [...new Set(images)];
+      return unique.length > 0 ? unique : null;
+    } catch (err) {
+      logger.warn(`[craigslist] Detail fetch failed for ${sourceUrl}: ${err.message}`);
+      return null;
+    }
+  }
+
   parseListing(item, city, propertyType) {
     return normalizeListing({
       external_id: item.link || String(Math.random()),

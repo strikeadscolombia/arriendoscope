@@ -3,7 +3,7 @@ import { CiencuadrasScraper } from './ciencuadras.js';
 import { MitulaScraper } from './mitula.js';
 import { FincaRaizScraper } from './fincaraiz.js';
 import { CraigslistScraper } from './craigslist.js';
-import { insertMany } from '../db/queries.js';
+import { insertMany, getListingsNeedingImages, updateListingImages } from '../db/queries.js';
 import { logger } from '../utils/logger.js';
 
 const COLOMBIA_CITIES = ['bogota', 'medellin', 'cali', 'barranquilla', 'bucaramanga', 'cartagena'];
@@ -19,6 +19,7 @@ export class Scheduler {
       { scraper: new CraigslistScraper(), cities: ['miami'] }
     ];
     this.timers = [];
+    this.enriching = false;
   }
 
   async runScraper({ scraper, cities }) {
@@ -47,6 +48,54 @@ export class Scheduler {
     }
   }
 
+  async enrichCraigslistImages() {
+    if (this.enriching) return;
+    this.enriching = true;
+
+    try {
+      const needsImages = getListingsNeedingImages('craigslist', 20);
+      if (needsImages.length === 0) {
+        logger.info('[scheduler] Craigslist enrich: no listings need images');
+        this.enriching = false;
+        return;
+      }
+
+      logger.info(`[scheduler] Enriching images for ${needsImages.length} craigslist listings...`);
+      const clScraper = this.scraperConfigs.find(c => c.scraper.name === 'craigslist')?.scraper;
+      if (!clScraper) { this.enriching = false; return; }
+
+      let enriched = 0;
+      for (const listing of needsImages) {
+        try {
+          await clScraper.delay(3000 + Math.random() * 4000);
+          const images = await clScraper.fetchDetailImages(listing.source_url);
+          if (images && images.length > 0) {
+            updateListingImages(listing.fingerprint, images[0], JSON.stringify(images));
+            enriched++;
+            logger.info(`[scheduler] Enriched ${listing.fingerprint.slice(0, 8)}: ${images.length} images`);
+          }
+        } catch (err) {
+          logger.warn(`[scheduler] Enrich failed: ${err.message}`);
+        }
+      }
+
+      logger.info(`[scheduler] Craigslist enrich done: ${enriched}/${needsImages.length} updated`);
+
+      // Broadcast update so frontend refreshes
+      if (enriched > 0) {
+        this.broadcast({
+          type: 'images_updated',
+          source: 'craigslist',
+          count: enriched
+        });
+      }
+    } catch (err) {
+      logger.error(`[scheduler] Craigslist enrich error: ${err.message}`);
+    } finally {
+      this.enriching = false;
+    }
+  }
+
   async start() {
     logger.info('[scheduler] Starting initial scrape of all sources...');
 
@@ -64,11 +113,22 @@ export class Scheduler {
       }, config.scraper.interval);
       this.timers.push(timer);
     }
+
+    // Image enrichment: start 5 min after boot, then every 10 min
+    const enrichTimer = setTimeout(() => {
+      this.enrichCraigslistImages();
+      const recurring = setInterval(() => {
+        this.enrichCraigslistImages();
+      }, 10 * 60 * 1000);
+      this.timers.push(recurring);
+    }, 5 * 60 * 1000);
+    this.timers.push(enrichTimer);
   }
 
   stop() {
     for (const timer of this.timers) {
       clearInterval(timer);
+      clearTimeout(timer);
     }
     this.timers = [];
     logger.info('[scheduler] Stopped');
