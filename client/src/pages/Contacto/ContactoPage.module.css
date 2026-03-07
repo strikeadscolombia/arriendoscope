@@ -1,11 +1,11 @@
 .page {
-  max-width: 480px;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 20px 20px 20px;
+  padding: 30px 30px 30px;
 }
 
 .header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   border-bottom: var(--border-width-strong) solid var(--color-border-strong);
   padding-bottom: 12px;
 }
