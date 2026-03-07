@@ -18,7 +18,7 @@
 }
 
 .logo {
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   font-weight: var(--weight-black);
   letter-spacing: var(--tracking-wide);
   line-height: var(--leading-tight);
@@ -73,11 +73,12 @@
 }
 
 .navBtn {
-  font-size: var(--text-sm);
-  font-weight: var(--weight-bold);
-  padding: var(--space-1) var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border: var(--border-width) solid transparent;
-  letter-spacing: var(--tracking-wider);
   transition: border-color var(--transition-fast);
   text-decoration: none;
   color: inherit;
