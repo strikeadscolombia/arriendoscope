@@ -91,6 +91,11 @@
   color: var(--color-source-arriendoscope);
 }
 
+.badge[data-source="bayut"] {
+  border-color: var(--color-source-bayut);
+  color: var(--color-source-bayut);
+}
+
 .typeBadge {
   font-family: var(--font-mono);
   font-size: var(--text-xs);

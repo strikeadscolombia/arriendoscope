@@ -16,7 +16,12 @@ const CITY_NORMALIZE = {
   'envigado': 'envigado', 'sabaneta': 'sabaneta', 'itagui': 'itagui', 'itagüí': 'itagui',
   'rionegro': 'rionegro', 'cajicá': 'cajica', 'cajica': 'cajica',
   'chia': 'chia', 'chía': 'chia',
-  'miami': 'miami', 'miami beach': 'miami', 'miami-dade': 'miami'
+  'miami': 'miami', 'miami beach': 'miami', 'miami-dade': 'miami',
+  'dubai': 'dubai', 'dubái': 'dubai', 'dubai marina': 'dubai',
+  'jumeirah': 'dubai', 'downtown dubai': 'dubai', 'business bay': 'dubai',
+  'palm jumeirah': 'dubai', 'deira': 'dubai', 'bur dubai': 'dubai',
+  'jbr': 'dubai', 'al barsha': 'dubai', 'silicon oasis': 'dubai',
+  'sports city': 'dubai', 'motor city': 'dubai', 'arabian ranches': 'dubai'
 };
 
 function normalizeCity(city) {

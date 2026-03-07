@@ -4,6 +4,7 @@ export const SOURCES = {
   mitula: { label: 'MITULA', short: 'MT' },
   fincaraiz: { label: 'FINCARAIZ', short: 'FR' },
   craigslist: { label: 'CRAIGSLIST', short: 'CL' },
+  bayut: { label: 'BAYUT', short: 'BY' },
   arriendoscope: { label: 'ARRIENDOSCOPE', short: 'AS' }
 };
 
@@ -14,7 +15,8 @@ export const CITIES = [
   { value: 'barranquilla', label: 'BARRANQUILLA' },
   { value: 'bucaramanga', label: 'BUCARAMANGA' },
   { value: 'cartagena', label: 'CARTAGENA' },
-  { value: 'miami', label: 'MIAMI' }
+  { value: 'miami', label: 'MIAMI' },
+  { value: 'dubai', label: 'DUBAI' }
 ];
 
 export const PROPERTY_TYPES = [
