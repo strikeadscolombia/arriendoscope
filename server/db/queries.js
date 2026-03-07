@@ -139,13 +139,21 @@ export function getListings(filters = {}) {
     params.neighborhood = `%${filters.neighborhood.toLowerCase()}%`;
   }
 
-  // Time range filter: today, 3days, week, month
+  // Time range filter: trading-style intervals + daily/weekly/monthly
   if (filters.timeRange) {
     const rangeMap = {
-      today: "date(created_at) = date('now')",
+      '1m':   "created_at >= datetime('now', '-1 minutes')",
+      '5m':   "created_at >= datetime('now', '-5 minutes')",
+      '15m':  "created_at >= datetime('now', '-15 minutes')",
+      '30m':  "created_at >= datetime('now', '-30 minutes')",
+      '1h':   "created_at >= datetime('now', '-1 hours')",
+      '3h':   "created_at >= datetime('now', '-3 hours')",
+      '6h':   "created_at >= datetime('now', '-6 hours')",
+      '12h':  "created_at >= datetime('now', '-12 hours')",
+      today:  "date(created_at) = date('now')",
       '3days': "created_at >= datetime('now', '-3 days')",
-      week: "created_at >= datetime('now', '-7 days')",
-      month: "created_at >= datetime('now', '-30 days')"
+      week:   "created_at >= datetime('now', '-7 days')",
+      month:  "created_at >= datetime('now', '-30 days')"
     };
     const condition = rangeMap[filters.timeRange];
     if (condition) {
