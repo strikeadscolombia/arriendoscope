@@ -2,12 +2,10 @@ import styles from './TimeRangeBar.module.css';
 
 const RANGES = [
   { value: 'today', label: 'HOY' },
-  { value: '1m',    label: '1m' },
   { value: '5m',    label: '5m' },
   { value: '15m',   label: '15m' },
   { value: '30m',   label: '30m' },
   { value: '1h',    label: '1H' },
-  { value: '4h',    label: '4H' },
   { value: '6h',    label: '6H' },
   { value: '12h',   label: '12H' },
   { value: '1day',  label: '1D' },

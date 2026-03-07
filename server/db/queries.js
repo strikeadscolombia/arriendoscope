@@ -142,12 +142,10 @@ export function getListings(filters = {}) {
   // Time range filter: trading-style intervals
   if (filters.timeRange) {
     const rangeMap = {
-      '1m':    "created_at >= datetime('now', '-1 minutes')",
       '5m':    "created_at >= datetime('now', '-5 minutes')",
       '15m':   "created_at >= datetime('now', '-15 minutes')",
       '30m':   "created_at >= datetime('now', '-30 minutes')",
       '1h':    "created_at >= datetime('now', '-1 hours')",
-      '4h':    "created_at >= datetime('now', '-4 hours')",
       '6h':    "created_at >= datetime('now', '-6 hours')",
       '12h':   "created_at >= datetime('now', '-12 hours')",
       today:   "date(created_at) = date('now')",

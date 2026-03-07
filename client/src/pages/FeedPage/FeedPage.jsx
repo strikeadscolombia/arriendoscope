@@ -9,12 +9,10 @@ import styles from './FeedPage.module.css';
 
 const RANGE_LABELS = {
   today: 'HOY',
-  '1m':  'ÚLTIMO MINUTO',
   '5m':  'ÚLTIMOS 5 MINUTOS',
   '15m': 'ÚLTIMOS 15 MINUTOS',
   '30m': 'ÚLTIMOS 30 MINUTOS',
   '1h':  'ÚLTIMA HORA',
-  '4h':  'ÚLTIMAS 4 HORAS',
   '6h':  'ÚLTIMAS 6 HORAS',
   '12h': 'ÚLTIMAS 12 HORAS',
   '1day': 'ÚLTIMAS 24 HORAS',

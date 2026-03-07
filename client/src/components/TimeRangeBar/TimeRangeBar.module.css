@@ -4,10 +4,12 @@
   max-width: 640px;
   width: 100%;
   margin: 0 auto;
+  padding: 0 var(--space-4);
   border-bottom: var(--border-width) solid var(--color-border);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  box-sizing: border-box;
 }
 
 .bar::-webkit-scrollbar {

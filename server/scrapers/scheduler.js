@@ -7,7 +7,7 @@ import { BayutScraper } from './bayut.js';
 import { insertMany, getListingsNeedingImages, updateListingImages } from '../db/queries.js';
 import { logger } from '../utils/logger.js';
 
-const COLOMBIA_CITIES = ['bogota', 'medellin', 'cali', 'barranquilla', 'bucaramanga', 'cartagena'];
+const COLOMBIA_CITIES = ['bogota', 'medellin', 'cali', 'barranquilla', 'bucaramanga', 'cartagena', 'pereira', 'manizales'];
 
 // Sources that support detail page image enrichment
 const ENRICHABLE_SOURCES = ['craigslist', 'ciencuadras', 'metrocuadrado'];

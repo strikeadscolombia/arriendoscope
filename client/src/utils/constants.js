@@ -15,6 +15,8 @@ export const CITIES = [
   { value: 'barranquilla', label: 'BARRANQUILLA' },
   { value: 'bucaramanga', label: 'BUCARAMANGA' },
   { value: 'cartagena', label: 'CARTAGENA' },
+  { value: 'pereira', label: 'PEREIRA' },
+  { value: 'manizales', label: 'MANIZALES' },
   { value: 'miami', label: 'MIAMI' },
   { value: 'dubai', label: 'DUBAI' }
 ];
