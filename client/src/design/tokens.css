@@ -12,6 +12,8 @@
   --color-accent-inverse: #FFFFFF;
   --color-danger: #CC0000;
   --color-success: #008800;
+  --color-new: #3B82F6;
+  --color-new-bg: rgba(59, 130, 246, 0.06);
 
   --color-source-metrocuadrado: #1A1A2E;
   --color-source-ciencuadras: #2D2D2D;
@@ -83,6 +85,8 @@
   --color-accent-inverse: #000000;
   --color-danger: #FF4444;
   --color-success: #44CC44;
+  --color-new: #60A5FA;
+  --color-new-bg: rgba(96, 165, 250, 0.08);
 
   --color-source-metrocuadrado: #C0C0D0;
   --color-source-ciencuadras: #B0B0B0;

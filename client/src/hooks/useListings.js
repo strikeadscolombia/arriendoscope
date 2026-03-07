@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useWebSocket } from './useWebSocket';
 import { API_BASE } from '../utils/constants';
+import { playNewListingSound } from '../utils/notificationSound';
 
 /* ── URL ↔ filter helpers ───────────────────────────────── */
 
@@ -134,6 +135,9 @@ export function useListings() {
 
       // Tag as new for entry animation
       const tagged = matched.map(l => ({ ...l, _isNew: true }));
+
+      // Play notification sound
+      playNewListingSound();
 
       if (isNearTopRef.current) {
         setListings(prev => [...tagged, ...prev]);
