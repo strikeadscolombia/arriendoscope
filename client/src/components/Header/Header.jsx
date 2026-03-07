@@ -1,11 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useStats } from '../../context/StatsContext';
+import { useFavorites } from '../../context/FavoritesContext';
 import styles from './Header.module.css';
 
 export function Header() {
   const { theme, toggleTheme } = useTheme();
   const { connected, total } = useStats();
+  const { count: favCount } = useFavorites();
   const { pathname } = useLocation();
 
   return (
@@ -49,6 +51,16 @@ export function Header() {
               <line x1="8" y1="2" x2="8" y2="14" />
               <line x1="2" y1="8" x2="14" y2="8" />
             </svg>
+          </Link>
+          <Link
+            to="/favoritos"
+            className={`${styles.navBtn} ${styles.navStar} ${pathname === '/favoritos' ? styles.navActive : ''}`}
+            aria-label="Favoritos"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill={pathname === '/favoritos' ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5">
+              <path d="M8 1.5l2 4.1 4.5.6-3.25 3.2.77 4.5L8 11.7l-4.02 2.2.77-4.5L1.5 6.2l4.5-.6z" />
+            </svg>
+            {favCount > 0 && <span className={styles.favBadge}>{favCount}</span>}
           </Link>
         </nav>
         <button className={styles.themeBtn} onClick={toggleTheme} aria-label="Toggle theme">

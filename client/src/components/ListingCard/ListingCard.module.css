@@ -102,11 +102,40 @@
   color: var(--color-text-secondary);
 }
 
+.topRight {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
 .timeGroup {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 1px;
+}
+
+.starBtn {
+  flex-shrink: 0;
+  padding: 2px;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  background: none;
+  border: none;
+  line-height: 1;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.starBtn:hover {
+  color: var(--color-text-secondary);
+}
+
+.starActive {
+  color: var(--color-text-primary);
+}
+
+.starActive:hover {
+  color: var(--color-text-primary);
 }
 
 .exactTime {

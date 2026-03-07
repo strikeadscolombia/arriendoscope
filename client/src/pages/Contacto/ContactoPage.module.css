@@ -1,13 +1,13 @@
 .page {
   max-width: 480px;
   margin: 0 auto;
-  padding: var(--space-8) var(--space-4) var(--space-12);
+  padding: var(--space-4) var(--space-4) var(--space-8);
 }
 
 .header {
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-4);
   border-bottom: var(--border-width-strong) solid var(--color-border-strong);
-  padding-bottom: var(--space-6);
+  padding-bottom: var(--space-3);
 }
 
 .title {
@@ -30,7 +30,7 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-4);
 }
 
 .label {

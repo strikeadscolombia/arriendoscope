@@ -86,6 +86,13 @@ export function getListings(filters = {}) {
   const conditions = [];
   const params = {};
 
+  if (filters.fingerprints) {
+    const fps = filters.fingerprints.split(',').slice(0, 200);
+    const placeholders = fps.map((_, i) => `@fp${i}`);
+    conditions.push(`fingerprint IN (${placeholders.join(',')})`);
+    fps.forEach((f, i) => { params[`fp${i}`] = f; });
+  }
+
   if (filters.source) {
     const sources = filters.source.split(',');
     const placeholders = sources.map((_, i) => `@source${i}`);

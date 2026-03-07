@@ -2,6 +2,7 @@ import { memo, useState, useEffect, useMemo, useCallback } from 'react';
 import { formatPrice } from '../../utils/formatPrice';
 import { formatExactTime, minutesOnList, formatPostedAt } from '../../utils/timeAgo';
 import { SOURCES } from '../../utils/constants';
+import { useFavorites } from '../../context/FavoritesContext';
 import { ImageGallery } from '../ImageGallery/ImageGallery';
 import styles from './ListingCard.module.css';
 
@@ -33,6 +34,8 @@ const TYPE_LABELS = {
 
 export const ListingCard = memo(function ListingCard({ listing }) {
   const [isNew, setIsNew] = useState(!!listing._isNew);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorited = isFavorite(listing.fingerprint);
 
   useEffect(() => {
     if (!isNew) return;
@@ -94,12 +97,23 @@ export const ListingCard = memo(function ListingCard({ listing }) {
             <span className={styles.typeBadge}>{typeLabel}</span>
           )}
         </div>
-        <div className={styles.timeGroup}>
-          <span className={styles.exactTime}>{formatExactTime(listing.created_at)}</span>
-          <TimeOnList dateStr={listing.created_at} />
-          {postedAtStr && (
-            <span className={styles.postedAt}>PUBLICADO {postedAtStr}</span>
-          )}
+        <div className={styles.topRight}>
+          <div className={styles.timeGroup}>
+            <span className={styles.exactTime}>{formatExactTime(listing.created_at)}</span>
+            <TimeOnList dateStr={listing.created_at} />
+            {postedAtStr && (
+              <span className={styles.postedAt}>PUBLICADO {postedAtStr}</span>
+            )}
+          </div>
+          <button
+            className={`${styles.starBtn} ${favorited ? styles.starActive : ''}`}
+            onClick={() => toggleFavorite(listing.fingerprint)}
+            aria-label={favorited ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill={favorited ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.2">
+              <path d="M8 1.5l2 4.1 4.5.6-3.25 3.2.77 4.5L8 11.7l-4.02 2.2.77-4.5L1.5 6.2l4.5-.6z" />
+            </svg>
+          </button>
         </div>
       </div>
 
