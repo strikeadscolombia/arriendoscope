@@ -1,57 +1,24 @@
-import { useEffect, useCallback } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
-import { useListings } from './hooks/useListings';
+import { StatsProvider } from './context/StatsContext';
 import { Header } from './components/Header/Header';
-import { FilterBar } from './components/FilterBar/FilterBar';
-import { TimeRangeBar } from './components/TimeRangeBar/TimeRangeBar';
-import { Feed } from './components/Feed/Feed';
-import { NewListingToast } from './components/NewListingToast/NewListingToast';
-
-function AppContent() {
-  const {
-    listings,
-    loading,
-    hasMore,
-    total,
-    pendingNew,
-    filters,
-    connected,
-    loadMore,
-    showNew,
-    applyFilters,
-    doInitialFetch,
-    setIsNearTop
-  } = useListings();
-
-  useEffect(() => {
-    doInitialFetch();
-  }, [doInitialFetch]);
-
-  const handleTimeRange = useCallback((timeRange) => {
-    applyFilters({ ...filters, timeRange: timeRange || undefined });
-  }, [filters, applyFilters]);
-
-  return (
-    <>
-      <Header connected={connected} total={total} />
-      <FilterBar filters={filters} onApply={applyFilters} />
-      <TimeRangeBar value={filters.timeRange || null} onChange={handleTimeRange} />
-      <NewListingToast count={pendingNew.length} onClick={showNew} />
-      <Feed
-        listings={listings}
-        loading={loading}
-        hasMore={hasMore}
-        loadMore={loadMore}
-        onScrollPositionChange={setIsNearTop}
-      />
-    </>
-  );
-}
+import { FeedPage } from './pages/FeedPage/FeedPage';
+import { QuienesSomosPage } from './pages/QuienesSomos/QuienesSomosPage';
+import { ContactoPage } from './pages/Contacto/ContactoPage';
+import { CrearPropiedadPage } from './pages/CrearPropiedad/CrearPropiedadPage';
 
 export default function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <StatsProvider>
+        <Header />
+        <Routes>
+          <Route path="/" element={<FeedPage />} />
+          <Route path="/quienes-somos" element={<QuienesSomosPage />} />
+          <Route path="/contacto" element={<ContactoPage />} />
+          <Route path="/crear" element={<CrearPropiedadPage />} />
+        </Routes>
+      </StatsProvider>
     </ThemeProvider>
   );
 }

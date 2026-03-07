@@ -4,6 +4,8 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getDb } from './db/init.js';
 import listingsRouter from './api/listings.js';
+import contactRouter from './api/contact.js';
+import createListingRouter from './api/create-listing.js';
 import { setupWebSocket, broadcast } from './ws/broadcast.js';
 import { Scheduler } from './scrapers/scheduler.js';
 import { logger } from './utils/logger.js';
@@ -19,7 +21,7 @@ getDb();
 logger.info('Database initialized');
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // CORS
 app.use((req, res, next) => {
@@ -28,7 +30,7 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', origin || '*');
   }
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
@@ -36,8 +38,13 @@ app.use((req, res, next) => {
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));
 
+// Make broadcast available to route handlers
+app.locals.broadcast = broadcast;
+
 // API routes
 app.use('/api', listingsRouter);
+app.use('/api', contactRouter);
+app.use('/api', createListingRouter);
 
 // Serve client build in production (if available)
 const clientDist = join(__dirname, '..', 'client', 'dist');

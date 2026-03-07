@@ -52,6 +52,17 @@ export function getDb() {
       )
     `);
 
+    // Contacts table
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS contacts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        whatsapp TEXT NOT NULL,
+        motivo TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      )
+    `);
+
     // Migrations: add columns if not exists
     const migrations = [
       'ALTER TABLE listings ADD COLUMN images TEXT',

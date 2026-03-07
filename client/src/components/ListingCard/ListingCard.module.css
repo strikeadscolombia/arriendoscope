@@ -86,6 +86,11 @@
   color: var(--color-source-craigslist);
 }
 
+.badge[data-source="arriendoscope"] {
+  border-color: var(--color-source-arriendoscope);
+  color: var(--color-source-arriendoscope);
+}
+
 .typeBadge {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
