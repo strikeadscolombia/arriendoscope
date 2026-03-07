@@ -16,15 +16,25 @@ const RANGES = [
 export function TimeRangeBar({ value, onChange }) {
   return (
     <div className={styles.bar}>
-      {RANGES.map(range => (
-        <button
-          key={range.value}
-          className={`${styles.rangeBtn} ${value === range.value ? styles.active : ''}`}
-          onClick={() => onChange(value === range.value ? null : range.value)}
-        >
-          {range.label}
-        </button>
-      ))}
+      <div className={styles.buttons}>
+        {RANGES.map(range => (
+          <button
+            key={range.value}
+            className={`${styles.rangeBtn} ${value === range.value ? styles.active : ''}`}
+            onClick={() => {
+              // HOY is always active — clicking it when active does nothing
+              // Clicking another active button deselects it (back to HOY)
+              if (range.value === 'today') {
+                onChange('today');
+              } else {
+                onChange(value === range.value ? 'today' : range.value);
+              }
+            }}
+          >
+            {range.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

@@ -14,6 +14,8 @@ function filtersFromUrl() {
     const val = params.get(key);
     if (val) filters[key] = val;
   }
+  // HOY is always the default time range
+  if (!filters.timeRange) filters.timeRange = 'today';
   return filters;
 }
 

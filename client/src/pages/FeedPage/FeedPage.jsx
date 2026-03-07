@@ -47,12 +47,12 @@ export function FeedPage() {
   }, [connected, total, setStats]);
 
   const handleTimeRange = useCallback((timeRange) => {
-    applyFilters({ ...filters, timeRange: timeRange || undefined });
+    applyFilters({ ...filters, timeRange: timeRange || 'today' });
   }, [filters, applyFilters]);
 
   const feedbackLabel = useMemo(() => {
-    if (!filters.timeRange) return null;
-    const label = RANGE_LABELS[filters.timeRange];
+    const range = filters.timeRange || 'today';
+    const label = RANGE_LABELS[range];
     if (!label) return null;
     return `${total} RESULTADO${total !== 1 ? 'S' : ''} — ${label}`;
   }, [filters.timeRange, total]);
@@ -60,7 +60,7 @@ export function FeedPage() {
   return (
     <>
       <FilterBar filters={filters} onApply={applyFilters} />
-      <TimeRangeBar value={filters.timeRange || null} onChange={handleTimeRange} />
+      <TimeRangeBar value={filters.timeRange || 'today'} onChange={handleTimeRange} />
       {feedbackLabel && (
         <div className={styles.feedback}>
           {feedbackLabel}
