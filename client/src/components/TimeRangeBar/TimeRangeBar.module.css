@@ -1,30 +1,28 @@
 .bar {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   max-width: 640px;
   width: 100%;
   margin: 0 auto;
   border-bottom: var(--border-width) solid var(--color-border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 
-.row {
-  display: flex;
-  align-items: center;
-}
-
-.row + .row {
-  border-top: var(--border-width) solid var(--color-border);
+.bar::-webkit-scrollbar {
+  display: none;
 }
 
 .rangeBtn {
-  flex: 1;
+  flex: 1 0 auto;
+  min-width: 0;
   font-family: var(--font-mono);
   font-size: 0.625rem;
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-wider);
-  padding: var(--space-2) 0;
+  padding: var(--space-2) var(--space-2);
   text-align: center;
-  text-transform: uppercase;
   white-space: nowrap;
   border-right: var(--border-width) solid var(--color-border);
   color: var(--color-text-tertiary);
@@ -33,12 +31,6 @@
 
 .rangeBtn:last-child {
   border-right: none;
-}
-
-.rangeBtnLong {
-  font-size: var(--text-xs);
-  padding: var(--space-2) 0;
-  color: var(--color-text-secondary);
 }
 
 .rangeBtn:hover {

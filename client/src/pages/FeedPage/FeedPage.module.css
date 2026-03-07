@@ -1,0 +1,12 @@
+.feedback {
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wider);
+  color: var(--color-text-tertiary);
+  border-bottom: var(--border-width) solid var(--color-border);
+}

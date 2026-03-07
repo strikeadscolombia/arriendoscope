@@ -1,13 +1,13 @@
 .page {
   max-width: 480px;
   margin: 0 auto;
-  padding: var(--space-4) var(--space-4) var(--space-8);
+  padding: 20px 20px 20px;
 }
 
 .header {
-  margin-bottom: var(--space-4);
+  margin-bottom: 20px;
   border-bottom: var(--border-width-strong) solid var(--color-border-strong);
-  padding-bottom: var(--space-3);
+  padding-bottom: 12px;
 }
 
 .title {

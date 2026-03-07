@@ -1,10 +1,26 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useListings } from '../../hooks/useListings';
 import { useStats } from '../../context/StatsContext';
 import { FilterBar } from '../../components/FilterBar/FilterBar';
 import { TimeRangeBar } from '../../components/TimeRangeBar/TimeRangeBar';
 import { Feed } from '../../components/Feed/Feed';
 import { NewListingToast } from '../../components/NewListingToast/NewListingToast';
+import styles from './FeedPage.module.css';
+
+const RANGE_LABELS = {
+  today: 'HOY',
+  '1m':  'ÚLTIMO MINUTO',
+  '5m':  'ÚLTIMOS 5 MINUTOS',
+  '15m': 'ÚLTIMOS 15 MINUTOS',
+  '30m': 'ÚLTIMOS 30 MINUTOS',
+  '1h':  'ÚLTIMA HORA',
+  '4h':  'ÚLTIMAS 4 HORAS',
+  '6h':  'ÚLTIMAS 6 HORAS',
+  '12h': 'ÚLTIMAS 12 HORAS',
+  '1day': 'ÚLTIMAS 24 HORAS',
+  week:  'ÚLTIMA SEMANA',
+  month: 'ÚLTIMO MES',
+};
 
 export function FeedPage() {
   const {
@@ -36,10 +52,22 @@ export function FeedPage() {
     applyFilters({ ...filters, timeRange: timeRange || undefined });
   }, [filters, applyFilters]);
 
+  const feedbackLabel = useMemo(() => {
+    if (!filters.timeRange) return null;
+    const label = RANGE_LABELS[filters.timeRange];
+    if (!label) return null;
+    return `${total} RESULTADO${total !== 1 ? 'S' : ''} — ${label}`;
+  }, [filters.timeRange, total]);
+
   return (
     <>
       <FilterBar filters={filters} onApply={applyFilters} />
       <TimeRangeBar value={filters.timeRange || null} onChange={handleTimeRange} />
+      {feedbackLabel && (
+        <div className={styles.feedback}>
+          {feedbackLabel}
+        </div>
+      )}
       <NewListingToast count={pendingNew.length} onClick={showNew} />
       <Feed
         listings={listings}
