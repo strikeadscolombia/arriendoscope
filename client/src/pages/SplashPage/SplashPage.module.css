@@ -72,6 +72,29 @@
   }
 }
 
+/* ─── Tap prompt — waiting phase ─── */
+.tapPrompt {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #666666;
+  text-align: center;
+  margin: 0;
+  position: absolute;
+  bottom: 30%;
+  animation: tapPulse 2s ease-in-out infinite;
+}
+
+@keyframes tapPulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* ─── Title — letter stagger ─── */
 .title {
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;

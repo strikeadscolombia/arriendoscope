@@ -9,37 +9,46 @@ const SUBTITLE_TEXT = 'RADAR DE ARRIENDOS EN TIEMPO REAL';
  * Immersive splash/landing page.
  *
  * Phases:
- *   radar  → Only radar animation visible (0–1.5s)
- *   title  → Title letters stagger in (1.5s)
- *   ready  → Subtitle + CTA visible (3s)
- *   exit   → Fade out + zoom radar (on click)
+ *   waiting → Radar animates, "TOCA PARA INICIAR" visible (waits for gesture)
+ *   title   → Audio starts, title letters stagger in
+ *   ready   → Subtitle + CTA visible
+ *   exit    → Fade out + zoom radar (on CTA click)
  */
 export function SplashPage({ onEnter }) {
-  const [phase, setPhase] = useState('radar');
+  const [phase, setPhase] = useState('waiting');
   const audioStarted = useRef(false);
 
+  // Cleanup on unmount
   useEffect(() => {
-    // Attempt to start audio (may be blocked by autoplay policy until gesture)
+    return () => {
+      cleanupSplashAudio();
+    };
+  }, []);
+
+  // Phase progression: once user taps and we move to 'title', auto-advance to 'ready'
+  useEffect(() => {
+    if (phase === 'title') {
+      const t = setTimeout(() => setPhase('ready'), 1800);
+      return () => clearTimeout(t);
+    }
+  }, [phase]);
+
+  // Handle first tap — start audio + begin title animation
+  const handleTap = useCallback(() => {
+    if (phase !== 'waiting') {
+      // If already past waiting, just ensure audio is resumed
+      resumeAudio();
+      return;
+    }
+
+    // Start audio on user gesture — this satisfies autoplay policy
     if (!audioStarted.current) {
       audioStarted.current = true;
       startSplashAudio();
     }
 
-    // Phase progression timers
-    const t1 = setTimeout(() => setPhase('title'), 1500);
-    const t2 = setTimeout(() => setPhase('ready'), 3000);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      cleanupSplashAudio();
-    };
-  }, []);
-
-  // Resume audio on any user interaction (autoplay policy workaround)
-  const handleInteraction = useCallback(() => {
-    resumeAudio();
-  }, []);
+    setPhase('title');
+  }, [phase]);
 
   const handleEnter = useCallback(() => {
     setPhase('exit');
@@ -50,7 +59,8 @@ export function SplashPage({ onEnter }) {
     }, 800);
   }, [onEnter]);
 
-  const showTitle = phase !== 'radar';
+  const showTapPrompt = phase === 'waiting';
+  const showTitle = phase === 'title' || phase === 'ready' || phase === 'exit';
   const showSubtitle = phase === 'ready' || phase === 'exit';
   const showCta = phase === 'ready' || phase === 'exit';
   const isExiting = phase === 'exit';
@@ -58,10 +68,10 @@ export function SplashPage({ onEnter }) {
   return (
     <div
       className={`${styles.splash} ${isExiting ? styles.splashExit : ''}`}
-      onClick={handleInteraction}
-      onTouchStart={handleInteraction}
+      onClick={handleTap}
+      onTouchStart={handleTap}
     >
-      {/* Radar animation — 5 rings */}
+      {/* Radar animation — 5 rings (always visible) */}
       <div className={`${styles.radar} ${isExiting ? styles.radarExit : ''}`}>
         <div className={styles.radarDot} />
         <div className={`${styles.ring} ${styles.ring1}`} />
@@ -70,6 +80,11 @@ export function SplashPage({ onEnter }) {
         <div className={`${styles.ring} ${styles.ring4}`} />
         <div className={`${styles.ring} ${styles.ring5}`} />
       </div>
+
+      {/* Tap prompt — visible only in waiting phase */}
+      {showTapPrompt && (
+        <p className={styles.tapPrompt}>TOCA PARA INICIAR</p>
+      )}
 
       {/* Title with letter-by-letter stagger */}
       <h1 className={`${styles.title} ${!showTitle ? styles.titleHidden : ''}`}>

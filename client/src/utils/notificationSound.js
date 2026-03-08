@@ -10,9 +10,31 @@ function getContext() {
   return audioCtx;
 }
 
+/**
+ * Warm up the AudioContext by resuming it after a user gesture.
+ * Call this once from a document click/touch listener so that
+ * future calls to playNewListingSound() (from WebSocket handlers)
+ * actually produce audible output.
+ */
+export function warmupNotificationSound() {
+  try {
+    const ctx = getContext();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+  } catch {
+    // Silently fail
+  }
+}
+
 export function playNewListingSound() {
   try {
     const ctx = getContext();
+
+    // If context is suspended (no user gesture yet), try to resume
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
 
     // Two quick tones: C6 → E6 (clean, minimal "ding-ding")
     const notes = [1047, 1319]; // Hz

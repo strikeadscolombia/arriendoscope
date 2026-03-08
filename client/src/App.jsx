@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { StatsProvider } from './context/StatsContext';
@@ -12,6 +12,7 @@ import { QuienesSomosPage } from './pages/QuienesSomos/QuienesSomosPage';
 import { ContactoPage } from './pages/Contacto/ContactoPage';
 import { CrearPropiedadPage } from './pages/CrearPropiedad/CrearPropiedadPage';
 import { FavoritosPage } from './pages/Favoritos/FavoritosPage';
+import { warmupNotificationSound } from './utils/notificationSound';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(() => {
@@ -22,6 +23,24 @@ export default function App() {
     localStorage.setItem('arriendoscope_intro_seen', '1');
     setShowSplash(false);
   };
+
+  // Warm up notification AudioContext on first user gesture
+  // This ensures WebSocket-triggered sounds can play later
+  useEffect(() => {
+    function onFirstGesture() {
+      warmupNotificationSound();
+      document.removeEventListener('click', onFirstGesture);
+      document.removeEventListener('touchstart', onFirstGesture);
+    }
+
+    document.addEventListener('click', onFirstGesture, { once: true });
+    document.addEventListener('touchstart', onFirstGesture, { once: true });
+
+    return () => {
+      document.removeEventListener('click', onFirstGesture);
+      document.removeEventListener('touchstart', onFirstGesture);
+    };
+  }, []);
 
   // Splash — always black, outside ThemeProvider
   if (showSplash) {

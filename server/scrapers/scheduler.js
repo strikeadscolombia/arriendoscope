@@ -2,6 +2,7 @@ import { MetrocuadradoScraper } from './metrocuadrado.js';
 import { CiencuadrasScraper } from './ciencuadras.js';
 import { MitulaScraper } from './mitula.js';
 import { FincaRaizScraper } from './fincaraiz.js';
+import { ProperatiScraper } from './properati.js';
 import { CraigslistScraper } from './craigslist.js';
 import { BayutScraper } from './bayut.js';
 import { insertMany, getListingsNeedingImages, updateListingImages, getListingsNeedingDetails, updateListingDetails } from '../db/queries.js';
@@ -23,6 +24,7 @@ export class Scheduler {
       { scraper: new CiencuadrasScraper(), cities: COLOMBIA_CITIES },
       { scraper: new MitulaScraper(), cities: COLOMBIA_CITIES },
       { scraper: new FincaRaizScraper(), cities: COLOMBIA_CITIES },
+      { scraper: new ProperatiScraper(), cities: COLOMBIA_CITIES },
       { scraper: new CraigslistScraper(), cities: ['miami'] },
       { scraper: new BayutScraper(), cities: ['dubai'] }
     ];

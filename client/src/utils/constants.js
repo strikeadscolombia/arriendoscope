@@ -3,6 +3,7 @@ export const SOURCES = {
   ciencuadras: { label: 'CIENCUADRAS', short: 'CC' },
   mitula: { label: 'MITULA', short: 'MT' },
   fincaraiz: { label: 'FINCARAIZ', short: 'FR' },
+  properati: { label: 'PROPERATI', short: 'PR' },
   craigslist: { label: 'CRAIGSLIST', short: 'CL' },
   bayut: { label: 'BAYUT', short: 'BY' },
   arriendoscope: { label: 'ARRIENDOSCOPE', short: 'AS' }
