@@ -1,0 +1,209 @@
+/* ─── Splash Container ─── */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.splashExit {
+  animation: exitFade 0.8s ease forwards;
+  pointer-events: none;
+}
+
+/* ─── Radar — 3x larger (240px), 5 rings ─── */
+.radar {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  margin-bottom: 48px;
+}
+
+.radarExit {
+  animation: exitZoom 0.8s ease forwards;
+}
+
+.radarDot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  background: #FFFFFF;
+  transform: translate(-50%, -50%);
+}
+
+.ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border: 1px solid #FFFFFF;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  animation: radarPingLarge 3s ease-out infinite;
+}
+
+.ring1 { width: 48px;  height: 48px;  animation-delay: 0s; }
+.ring2 { width: 96px;  height: 96px;  animation-delay: 0.6s; }
+.ring3 { width: 144px; height: 144px; animation-delay: 1.2s; }
+.ring4 { width: 192px; height: 192px; animation-delay: 1.8s; }
+.ring5 { width: 240px; height: 240px; animation-delay: 2.4s; }
+
+@keyframes radarPingLarge {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  20% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* ─── Title — letter stagger ─── */
+.title {
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 2.0625rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-align: center;
+  margin: 0;
+  min-height: 2.5rem;
+}
+
+.titleHidden {
+  visibility: hidden;
+}
+
+.letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: letterReveal 0.4s ease forwards;
+}
+
+/* ─── Subtitle ─── */
+.subtitle {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: #666666;
+  text-align: center;
+  margin: 16px 0 0;
+  opacity: 0;
+  padding: 0 24px;
+}
+
+.subtitleVisible {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+/* ─── CTA Button ─── */
+.cta {
+  position: relative;
+  margin-top: 48px;
+  padding: 16px 48px;
+  background: transparent;
+  color: #FFFFFF;
+  border: 1px solid #FFFFFF;
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.ctaVisible {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.cta:hover {
+  background: #FFFFFF;
+  color: #000000;
+}
+
+/* Pulsing outer border */
+.ctaVisible::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 1px solid #FFFFFF;
+  animation: pulseBorder 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ─── Scanline effect (subtle) ─── */
+.splash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.015) 2px,
+    rgba(255, 255, 255, 0.015) 4px
+  );
+  pointer-events: none;
+}
+
+/* ─── Keyframes ─── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes letterReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseBorder {
+  0%, 100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes exitFade {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes exitZoom {
+  to {
+    transform: scale(3);
+    opacity: 0;
+  }
+}

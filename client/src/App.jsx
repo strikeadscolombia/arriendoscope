@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { StatsProvider } from './context/StatsContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import { Header } from './components/Header/Header';
 import { SEO } from './components/SEO/SEO';
+import { SplashPage } from './pages/SplashPage/SplashPage';
 import { FeedPage } from './pages/FeedPage/FeedPage';
 import { CityPage } from './pages/CityPage/CityPage';
 import { QuienesSomosPage } from './pages/QuienesSomos/QuienesSomosPage';
@@ -12,6 +14,20 @@ import { CrearPropiedadPage } from './pages/CrearPropiedad/CrearPropiedadPage';
 import { FavoritosPage } from './pages/Favoritos/FavoritosPage';
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(() => {
+    return !localStorage.getItem('arriendoscope_intro_seen');
+  });
+
+  const handleEnter = () => {
+    localStorage.setItem('arriendoscope_intro_seen', '1');
+    setShowSplash(false);
+  };
+
+  // Splash — always black, outside ThemeProvider
+  if (showSplash) {
+    return <SplashPage onEnter={handleEnter} />;
+  }
+
   return (
     <ThemeProvider>
       <StatsProvider>

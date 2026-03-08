@@ -32,15 +32,10 @@ export function FeedPage() {
     loadMore,
     showNew,
     applyFilters,
-    doInitialFetch,
     setIsNearTop
   } = useListings();
 
   const { setStats } = useStats();
-
-  useEffect(() => {
-    doInitialFetch();
-  }, [doInitialFetch]);
 
   useEffect(() => {
     setStats({ connected, total });

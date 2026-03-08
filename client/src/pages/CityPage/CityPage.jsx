@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useMemo, useState } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { SEO } from '../../components/SEO/SEO';
 import { useListings } from '../../hooks/useListings';
@@ -172,21 +172,16 @@ function CityContent({ city, seo }) {
     loadMore,
     showNew,
     applyFilters,
-    doInitialFetch,
     setIsNearTop
-  } = useListings();
+  } = useListings({ city });
 
   const { setStats } = useStats();
 
-  // Force city filter on mount and when city changes
+  // When city changes (navigating between city pages)
   useEffect(() => {
     applyFilters({ ...filters, city, timeRange: filters.timeRange || 'today' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [city]);
-
-  useEffect(() => {
-    doInitialFetch();
-  }, [doInitialFetch]);
 
   useEffect(() => {
     setStats({ connected, total });

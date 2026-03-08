@@ -7,7 +7,7 @@ import { playNewListingSound } from '../utils/notificationSound';
 
 const FILTER_KEYS = ['city', 'source', 'propertyType', 'priceMin', 'priceMax', 'rooms', 'bathrooms', 'neighborhood', 'timeRange'];
 
-function filtersFromUrl() {
+function filtersFromUrl(overrides = {}) {
   const params = new URLSearchParams(window.location.search);
   const filters = {};
   for (const key of FILTER_KEYS) {
@@ -16,7 +16,7 @@ function filtersFromUrl() {
   }
   // HOY is always the default time range
   if (!filters.timeRange) filters.timeRange = 'today';
-  return filters;
+  return { ...filters, ...overrides };
 }
 
 function filtersToUrl(filters) {
@@ -59,49 +59,67 @@ function listingMatchesFilters(listing, filters) {
 
 /* ── Hook ────────────────────────────────────────────────── */
 
-export function useListings() {
+export function useListings(initialFilterOverrides = {}) {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [total, setTotal] = useState(0);
   const [pendingNew, setPendingNew] = useState([]);
-  const [filters, setFilters] = useState(filtersFromUrl);
-  const fetchingRef = useRef(false);
-  const initialFetchDone = useRef(false);
+  const [filters, setFilters] = useState(() => filtersFromUrl(initialFilterOverrides));
+
+  // Refs for stable access without re-creating callbacks
+  const abortRef = useRef(null);
+  const generationRef = useRef(0);
+  const loadingRef = useRef(false);
   const isNearTopRef = useRef(true);
   const filtersRef = useRef(filters);
+  const listingsRef = useRef([]);
 
-  // Keep filtersRef in sync for WS callback
-  useEffect(() => {
-    filtersRef.current = filters;
-  }, [filters]);
+  // Keep refs in sync
+  useEffect(() => { filtersRef.current = filters; }, [filters]);
+  useEffect(() => { listingsRef.current = listings; }, [listings]);
 
   const setIsNearTop = useCallback((val) => {
     isNearTopRef.current = val;
   }, []);
 
+  // buildQuery reads from filtersRef — zero deps, stable identity
   const buildQuery = useCallback((extra = {}) => {
     const params = new URLSearchParams();
-    const merged = { ...filters, ...extra };
+    const merged = { ...filtersRef.current, ...extra };
     for (const [key, val] of Object.entries(merged)) {
       if (val != null && val !== '') params.set(key, val);
     }
     return params.toString();
-  }, [filters]);
+  }, []);
 
   const fetchListings = useCallback(async (reset = false) => {
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
+    // On reset (filter change): abort any in-flight request
+    if (reset && abortRef.current) abortRef.current.abort();
+
+    // On pagination: skip if already loading
+    if (!reset && loadingRef.current) return;
+
+    const generation = ++generationRef.current;
+    const controller = new AbortController();
+    abortRef.current = controller;
+    loadingRef.current = true;
+
     if (reset) setLoading(true);
 
     try {
       const extra = {};
-      if (!reset && listings.length > 0) {
-        extra.before = listings[listings.length - 1].created_at;
+      if (!reset && listingsRef.current.length > 0) {
+        extra.before = listingsRef.current[listingsRef.current.length - 1].created_at;
       }
       const query = buildQuery(extra);
-      const res = await fetch(`${API_BASE}/api/listings?${query}`);
+      const res = await fetch(`${API_BASE}/api/listings?${query}`, {
+        signal: controller.signal,
+      });
       const data = await res.json();
+
+      // Stale response — a newer fetch superseded this one
+      if (generation !== generationRef.current) return;
 
       if (reset) {
         setListings(data.listings);
@@ -111,18 +129,19 @@ export function useListings() {
       setTotal(data.total);
       setHasMore(data.hasMore);
     } catch (err) {
+      if (err.name === 'AbortError') return; // Normal cancellation
       console.error('Fetch listings error:', err);
     } finally {
-      setLoading(false);
-      fetchingRef.current = false;
+      if (generation === generationRef.current) {
+        setLoading(false);
+        loadingRef.current = false;
+      }
     }
-  }, [filters, listings, buildQuery]);
+  }, [buildQuery]);
 
   const loadMore = useCallback(() => {
-    if (!loading && hasMore) {
-      fetchListings(false);
-    }
-  }, [fetchListings, loading, hasMore]);
+    if (hasMore) fetchListings(false);
+  }, [fetchListings, hasMore]);
 
   const handleWsMessage = useCallback((data) => {
     if (data.type === 'new_listings' && data.listings) {
@@ -163,18 +182,23 @@ export function useListings() {
     setListings([]);
     setPendingNew([]);
     setHasMore(true);
-    initialFetchDone.current = false;
-  }, []);
+    // Update ref synchronously so fetchListings reads new filters immediately
+    filtersRef.current = newFilters;
+    fetchListings(true);
+  }, [fetchListings]);
 
   const { connected } = useWebSocket(handleWsMessage);
 
-  // Initial fetch and refetch on filter change
-  const doInitialFetch = useCallback(() => {
-    if (!initialFetchDone.current) {
-      initialFetchDone.current = true;
-      fetchListings(true);
-    }
-  }, [fetchListings]);
+  // Initial fetch on mount
+  useEffect(() => {
+    fetchListings(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Abort on unmount
+  useEffect(() => {
+    return () => { if (abortRef.current) abortRef.current.abort(); };
+  }, []);
 
   return {
     listings,
@@ -187,7 +211,6 @@ export function useListings() {
     loadMore,
     showNew,
     applyFilters,
-    doInitialFetch,
     setIsNearTop
   };
 }
