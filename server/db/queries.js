@@ -54,6 +54,41 @@ export function getListingsNeedingImages(source, limit = 20) {
   `).all({ source, limit });
 }
 
+export function getListingsNeedingDetails(source, limit = 15) {
+  const db = getDb();
+  return db.prepare(`
+    SELECT id, fingerprint, source_url, title
+    FROM listings
+    WHERE source = @source
+      AND (contact_phone IS NULL OR contact_phone = '')
+    ORDER BY created_at DESC
+    LIMIT @limit
+  `).all({ source, limit });
+}
+
+export function updateListingDetails(fingerprint, details) {
+  const db = getDb();
+  const sets = [];
+  const params = { fingerprint };
+
+  // Only update fields that have values and where the current value is empty
+  const fields = ['contact_phone', 'contact_name', 'address', 'rooms', 'bathrooms', 'stratum', 'admin_fee'];
+  for (const field of fields) {
+    if (details[field] != null) {
+      sets.push(`${field} = CASE WHEN ${field} IS NULL OR ${field} = '' OR ${field} = 0 THEN @${field} ELSE ${field} END`);
+      params[field] = details[field];
+    }
+  }
+
+  if (sets.length === 0) return;
+
+  return db.prepare(`
+    UPDATE listings
+    SET ${sets.join(', ')}
+    WHERE fingerprint = @fingerprint
+  `).run(params);
+}
+
 export function getNeighborhoods(city = null, search = '') {
   const db = getDb();
   const conditions = [`neighborhood IS NOT NULL`, `neighborhood != ''`];

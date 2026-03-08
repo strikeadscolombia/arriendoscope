@@ -171,14 +171,23 @@ export class CiencuadrasScraper extends BaseScraper {
     return listings;
   }
 
+  // Extract neighborhood from title like "Apartamento en arriendo - Bogotá/SAMPER"
+  extractLocationFromTitle(name) {
+    if (!name) return { neighborhood: null, titleCity: null };
+    const parts = (name || '').split(' - ');
+    // Find the part containing "City/Neighborhood" (has a "/")
+    const locationPart = parts.find(p => p.includes('/')) || '';
+    const locMatch = locationPart.match(/([^/]+)\/(.+)/);
+    return {
+      neighborhood: locMatch ? locMatch[2]?.trim() : null,
+      titleCity: locMatch ? locMatch[1]?.trim() : null
+    };
+  }
+
   parseListing(item, city, propertyType) {
     // From JSON-LD
     if (item._fromJsonLd) {
-      const titleParts = (item.name || '').split(' - ');
-      const locationPart = titleParts[0] || '';
-      // Extract city/neighborhood from title like "Apartamento en arriendo - Bogotá/SAMPER"
-      const locMatch = locationPart.match(/([^/]+)\/(.+)/);
-      const neighborhood = locMatch ? locMatch[2]?.trim() : null;
+      const { neighborhood } = this.extractLocationFromTitle(item.name);
 
       return normalizeListing({
         external_id: item.url || String(Math.random()),
@@ -190,7 +199,7 @@ export class CiencuadrasScraper extends BaseScraper {
         building_name: null,
         price: item.price,
         admin_fee: 0,
-        rooms: null,
+        rooms: item.rooms || null,
         bathrooms: item.bathrooms,
         area_m2: item.area_m2,
         stratum: null,
@@ -309,6 +318,76 @@ export class CiencuadrasScraper extends BaseScraper {
       return unique.length > 0 ? unique : null;
     } catch (err) {
       logger.warn(`[ciencuadras] Detail fetch failed for ${sourceUrl}: ${err.message}`);
+      return null;
+    }
+  }
+
+  // Fetch phone, rooms, estrato from detail page (Angular transfer state)
+  async fetchDetailInfo(sourceUrl) {
+    try {
+      const response = await fetch(sourceUrl, {
+        headers: {
+          ...defaultHeaders(),
+          'Referer': this.baseUrl
+        }
+      });
+      if (!response.ok) return null;
+
+      const html = await response.text();
+      const info = {};
+
+      // Unescape &q; encoding used by Angular state
+      const unescaped = html.replace(/&q;/g, '"').replace(/&amp;/g, '&');
+
+      // Extract WhatsApp contact phone
+      const phoneMatch = unescaped.match(/"whatsAppContact"\s*:\s*"(\d{7,})"/);
+      if (phoneMatch) info.contact_phone = phoneMatch[1];
+
+      // Fallback: phoneList
+      if (!info.contact_phone) {
+        const phoneListMatch = unescaped.match(/"phone"\s*:\s*"(\d{7,})"/);
+        if (phoneListMatch) info.contact_phone = phoneListMatch[1];
+      }
+
+      // Extract rooms (habitaciones)
+      const roomsMatch = unescaped.match(/"rooms"\s*:\s*"?(\d+)"?/) ||
+                          unescaped.match(/"habitaciones"\s*:\s*"?(\d+)"?/) ||
+                          html.match(/(\d+)\s*Habitacion/i);
+      if (roomsMatch) info.rooms = parseInt(roomsMatch[1]);
+
+      // Extract estrato
+      const stratoMatch = unescaped.match(/"stratum"\s*:\s*"?(\d)"?/) ||
+                          unescaped.match(/"estrato"\s*:\s*"?(\d)"?/) ||
+                          html.match(/Estrato:\s*(\d)/);
+      if (stratoMatch) info.stratum = parseInt(stratoMatch[1]);
+
+      // Extract admin fee
+      const adminMatch = unescaped.match(/"adminPrice"\s*:\s*"?(\d+)"?/) ||
+                         unescaped.match(/"administracion"\s*:\s*"?(\d+)"?/);
+      if (adminMatch) info.admin_fee = parseInt(adminMatch[1]);
+
+      // Extract address from detail JSON-LD Product name:
+      // "Apartamento en Arriendo en Las Vegas, Comuna 1, Envigado"
+      const $ = cheerio.load(html);
+      $('script[type="application/ld+json"]').each((_, el) => {
+        try {
+          const data = JSON.parse($(el).html());
+          if (data['@type'] === 'Product' && data.name) {
+            // Extract everything after "en Arriendo en " as the address
+            const addrMatch = data.name.match(/en\s+Arriendo\s+en\s+(.+)/i);
+            if (addrMatch) info.address = addrMatch[1].trim();
+          }
+        } catch {}
+      });
+
+      // Extract contact name (inmobiliaria)
+      const nameMatch = unescaped.match(/"companyName"\s*:\s*"([^"]+)"/) ||
+                        unescaped.match(/"inmobiliaria"\s*:\s*"([^"]+)"/);
+      if (nameMatch) info.contact_name = nameMatch[1];
+
+      return Object.keys(info).length > 0 ? info : null;
+    } catch (err) {
+      logger.warn(`[ciencuadras] Detail info fetch failed for ${sourceUrl}: ${err.message}`);
       return null;
     }
   }

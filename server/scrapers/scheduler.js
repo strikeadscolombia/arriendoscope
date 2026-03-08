@@ -4,13 +4,16 @@ import { MitulaScraper } from './mitula.js';
 import { FincaRaizScraper } from './fincaraiz.js';
 import { CraigslistScraper } from './craigslist.js';
 import { BayutScraper } from './bayut.js';
-import { insertMany, getListingsNeedingImages, updateListingImages } from '../db/queries.js';
+import { insertMany, getListingsNeedingImages, updateListingImages, getListingsNeedingDetails, updateListingDetails } from '../db/queries.js';
 import { logger } from '../utils/logger.js';
 
 const COLOMBIA_CITIES = ['bogota', 'medellin', 'cali', 'barranquilla', 'bucaramanga', 'cartagena', 'pereira', 'manizales'];
 
 // Sources that support detail page image enrichment
 const ENRICHABLE_SOURCES = ['craigslist', 'ciencuadras', 'metrocuadrado'];
+
+// Sources that support detail page info enrichment (phone, rooms, estrato)
+const DETAIL_ENRICHABLE_SOURCES = ['ciencuadras'];
 
 export class Scheduler {
   constructor(broadcast) {
@@ -91,6 +94,36 @@ export class Scheduler {
     }
   }
 
+  // Detail enrichment: fetch phone, rooms, estrato from detail pages
+  async enrichDetails(sourceName, batchSize = 10) {
+    const scraper = this.scraperConfigs.find(c => c.scraper.name === sourceName)?.scraper;
+    if (!scraper || typeof scraper.fetchDetailInfo !== 'function') return;
+
+    const needsDetails = getListingsNeedingDetails(sourceName, batchSize);
+    if (needsDetails.length === 0) return;
+
+    logger.info(`[scheduler] Enriching details for ${needsDetails.length} ${sourceName} listings...`);
+
+    let enriched = 0;
+    for (const listing of needsDetails) {
+      try {
+        await scraper.delay(2000 + Math.random() * 3000);
+        const info = await scraper.fetchDetailInfo(listing.source_url);
+        if (info) {
+          updateListingDetails(listing.fingerprint, info);
+          enriched++;
+          logger.info(`[scheduler] ${sourceName} detail enriched ${listing.fingerprint.slice(0, 8)}: ${Object.keys(info).join(', ')}`);
+        }
+      } catch (err) {
+        logger.warn(`[scheduler] ${sourceName} detail enrich failed: ${err.message}`);
+      }
+    }
+
+    if (enriched > 0) {
+      logger.info(`[scheduler] ${sourceName} detail enrich done: ${enriched}/${needsDetails.length} updated`);
+    }
+  }
+
   // Cycle through all enrichable sources
   async enrichAllSources() {
     if (this.enriching) return;
@@ -99,6 +132,9 @@ export class Scheduler {
     try {
       for (const source of ENRICHABLE_SOURCES) {
         await this.enrichImages(source);
+      }
+      for (const source of DETAIL_ENRICHABLE_SOURCES) {
+        await this.enrichDetails(source);
       }
     } catch (err) {
       logger.error(`[scheduler] Enrich cycle error: ${err.message}`);

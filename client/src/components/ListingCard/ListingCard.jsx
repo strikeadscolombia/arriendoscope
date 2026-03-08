@@ -32,6 +32,31 @@ const TYPE_LABELS = {
   casa: 'CASA'
 };
 
+// Extract a human-readable location from the title when address/neighborhood are missing
+function extractLocationFromTitle(title) {
+  if (!title) return null;
+
+  // Ciencuadras: "Apartamento en arriendo - Envigado/Las Vegas"
+  const dashParts = title.split(' - ');
+  const locPart = dashParts.find(p => p.includes('/'));
+  if (locPart) {
+    const [, barrio] = locPart.split('/');
+    return barrio ? barrio.trim() : null;
+  }
+
+  // Metrocuadrado: "Apartamento en Arriendo, CHICO NORTE, Bogotá D.C."
+  const commaParts = title.split(',').map(s => s.trim());
+  if (commaParts.length >= 2) {
+    return commaParts.slice(1, -1).join(', ').trim() || commaParts[1]?.trim();
+  }
+
+  // FincaRaiz/generic: "Apartamento en Arriendo en Granada"
+  const enMatch = title.match(/en\s+Arriendo\s+en\s+(.+)/i);
+  if (enMatch) return enMatch[1].trim();
+
+  return null;
+}
+
 export const ListingCard = memo(function ListingCard({ listing }) {
   const [isNew, setIsNew] = useState(!!listing._isNew);
   const { isFavorite, toggleFavorite } = useFavorites();
@@ -86,6 +111,20 @@ export const ListingCard = memo(function ListingCard({ listing }) {
   const postedAtStr = formatPostedAt(listing.posted_at);
   const typeLabel = TYPE_LABELS[listing.property_type];
 
+  // Location display: address > neighborhood > extract from title
+  const hasAddress = listing.address && listing.address.trim();
+  const hasNeighborhood = listing.neighborhood && listing.neighborhood.trim();
+  const locationFallback = (!hasAddress && !hasNeighborhood)
+    ? extractLocationFromTitle(listing.title)
+    : null;
+  const displayLocation = hasAddress
+    ? (hasNeighborhood && listing.address !== listing.neighborhood
+      ? `${listing.address}, ${listing.neighborhood}`
+      : listing.address)
+    : hasNeighborhood
+      ? listing.neighborhood
+      : locationFallback;
+
   return (
     <article className={`${styles.card} ${isNew ? styles.cardNew : ''}`}>
       <div className={styles.top}>
@@ -130,12 +169,13 @@ export const ListingCard = memo(function ListingCard({ listing }) {
         <div className={styles.building}>{listing.building_name.toUpperCase()}</div>
       )}
 
-      <div className={styles.address}>
-        {listing.address || listing.neighborhood || ''}
-        {listing.neighborhood && listing.address && listing.address !== listing.neighborhood
-          ? `, ${listing.neighborhood}`
-          : ''}
-      </div>
+      {displayLocation && (
+        <div className={styles.address}>{displayLocation}</div>
+      )}
+
+      {listing.contact_name && (
+        <div className={styles.contactName}>{listing.contact_name.toUpperCase()}</div>
+      )}
 
       <div className={styles.city}>{(listing.city || '').toUpperCase()}</div>
 
