@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Allow: /arriendos/
+Allow: /quienes-somos
+Allow: /contacto
+Allow: /crear
+Disallow: /api/
+Disallow: /favoritos
+
+Sitemap: https://arriendoscope.com/sitemap.xml

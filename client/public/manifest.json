@@ -1,0 +1,11 @@
+{
+  "name": "Arriendoscope — Arriendos en Tiempo Real",
+  "short_name": "Arriendoscope",
+  "description": "Encuentra arriendos frescos en Colombia, Miami y Dubai. Escaneamos los principales portales inmobiliarios cada 5 minutos. 100% gratis.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "lang": "es",
+  "categories": ["lifestyle", "utilities"]
+}
