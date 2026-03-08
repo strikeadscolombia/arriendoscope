@@ -87,6 +87,15 @@ export function useListings(initialFilterOverrides = {}) {
   const buildQuery = useCallback((extra = {}) => {
     const params = new URLSearchParams();
     const merged = { ...filtersRef.current, ...extra };
+
+    // For "today" filter, compute local midnight as UTC ISO string
+    // so the backend uses the user's timezone instead of server UTC
+    if (merged.timeRange === 'today') {
+      const now = new Date();
+      const localMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      merged.todayStart = localMidnight.toISOString().replace('T', ' ').slice(0, 19);
+    }
+
     for (const [key, val] of Object.entries(merged)) {
       if (val != null && val !== '') params.set(key, val);
     }
@@ -177,6 +186,8 @@ export function useListings(initialFilterOverrides = {}) {
   }, [pendingNew]);
 
   const applyFilters = useCallback((newFilters) => {
+    // Defensive: ensure timeRange is always present (HOY default)
+    if (!newFilters.timeRange) newFilters.timeRange = 'today';
     setFilters(newFilters);
     filtersToUrl(newFilters);
     setListings([]);

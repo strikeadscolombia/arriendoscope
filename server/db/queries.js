@@ -141,21 +141,27 @@ export function getListings(filters = {}) {
 
   // Time range filter: trading-style intervals
   if (filters.timeRange) {
-    const rangeMap = {
-      '5m':    "created_at >= datetime('now', '-5 minutes')",
-      '15m':   "created_at >= datetime('now', '-15 minutes')",
-      '30m':   "created_at >= datetime('now', '-30 minutes')",
-      '1h':    "created_at >= datetime('now', '-1 hours')",
-      '6h':    "created_at >= datetime('now', '-6 hours')",
-      '12h':   "created_at >= datetime('now', '-12 hours')",
-      today:   "date(created_at) = date('now')",
-      '1day':  "created_at >= datetime('now', '-1 days')",
-      week:    "created_at >= datetime('now', '-7 days')",
-      month:   "created_at >= datetime('now', '-30 days')"
-    };
-    const condition = rangeMap[filters.timeRange];
-    if (condition) {
-      conditions.push(condition);
+    if (filters.timeRange === 'today' && filters.todayStart) {
+      // Use client's local midnight (sent as UTC ISO string) for timezone-correct "today"
+      conditions.push('created_at >= @todayStart');
+      params.todayStart = filters.todayStart;
+    } else {
+      const rangeMap = {
+        '5m':    "created_at >= datetime('now', '-5 minutes')",
+        '15m':   "created_at >= datetime('now', '-15 minutes')",
+        '30m':   "created_at >= datetime('now', '-30 minutes')",
+        '1h':    "created_at >= datetime('now', '-1 hours')",
+        '6h':    "created_at >= datetime('now', '-6 hours')",
+        '12h':   "created_at >= datetime('now', '-12 hours')",
+        today:   "created_at >= datetime('now', 'start of day')",
+        '1day':  "created_at >= datetime('now', '-1 days')",
+        week:    "created_at >= datetime('now', '-7 days')",
+        month:   "created_at >= datetime('now', '-30 days')"
+      };
+      const condition = rangeMap[filters.timeRange];
+      if (condition) {
+        conditions.push(condition);
+      }
     }
   }
 
